@@ -45,10 +45,19 @@
         display:flex;flex-direction:column;align-items:center;padding-top:12px;position:sticky;top:0;height:100vh;z-index:20
       }
       .nav-back{
-        display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:none;background:transparent;color:var(--title-teal);
-        cursor:pointer;border-radius:8px;transition:background .15s ease
+        display:flex;align-items:center;justify-content:center;
+        width:44px;height:44px;
+        border:1px solid rgba(26,92,74,.18);
+        background:#ffffff;
+        color:var(--title-teal);
+        cursor:pointer;
+        border-radius:12px;
+        box-shadow:0 8px 18px rgba(0,0,0,.08);
+        transition:background .15s ease, transform .12s ease, border-color .15s ease;
       }
-      .nav-back:hover{background:#0000000f}
+      .nav-back:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35);transform:translateY(-1px)}
+      .nav-back:active{transform:translateY(0) scale(.98)}
+      .nav-back svg{width:20px;height:20px;display:block}
 
       .main-shell{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh}
       .page-header{
@@ -70,12 +79,18 @@
         display:flex;align-items:center;justify-content:center;
       }
       .profile-icon-btn{
-        width:44px;height:44px;border:none;background:transparent;padding:0;cursor:pointer;border-radius:50%;
-        transition:background .15s ease,transform .15s ease;
+        width:44px;height:44px;
+        border:1px solid rgba(26,92,74,.18);
+        background:#ffffff;
+        padding:0;
+        cursor:pointer;
+        border-radius:999px;
+        box-shadow:0 8px 18px rgba(0,0,0,.08);
+        transition:background .15s ease, transform .12s ease, border-color .15s ease;
         display:flex;align-items:center;justify-content:center;
       }
-      .profile-icon-btn:hover{background:#1a5c4a14;transform:scale(1.05)}
-      .profile-icon-btn:active{transform:scale(.97)}
+      .profile-icon-btn:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35);transform:translateY(-1px)}
+      .profile-icon-btn:active{transform:translateY(0) scale(.98)}
 
       .zim-body{
         flex:1;max-width:1100px;width:100%;margin:0 auto;padding:0 24px 110px;
@@ -90,6 +105,49 @@
       .rules-title{font-size:14px;font-weight:800;color:var(--green-dark);margin-bottom:10px}
       .rules-text{font-size:13px;color:var(--text-muted);line-height:1.45}
       .rules-list{margin-top:10px;padding-left:18px;color:var(--text-muted);font-size:13px;line-height:1.45}
+
+      .character-section{
+        margin-top:16px;
+        padding-top:14px;
+        border-top:1px solid rgba(26,92,74,.18);
+      }
+      .character-title{
+        font-size:13px;
+        font-weight:800;
+        color:var(--green-dark);
+        margin-bottom:10px;
+      }
+      .character-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:8px;
+      }
+      .character-card{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:4px;
+        padding:10px 6px;
+        border:2px solid rgba(26,92,74,.22);
+        border-radius:12px;
+        background:#faf8f4;
+        cursor:pointer;
+        font-family:inherit;
+        transition:border-color .15s ease, background .15s ease, transform .1s ease, box-shadow .15s ease;
+      }
+      .character-card:hover{
+        border-color:rgba(26,92,74,.45);
+        background:#fff;
+        transform:translateY(-1px);
+      }
+      .character-card.selected{
+        border-color:var(--green-dark);
+        background:#e8f5f0;
+        box-shadow:0 0 0 2px rgba(26,92,74,.12);
+      }
+      .character-emoji{font-size:26px;line-height:1}
+      .character-name{font-size:11px;font-weight:700;color:var(--title-teal)}
 
       .play-panel{
         background:var(--rules-bg);
@@ -110,6 +168,19 @@
         font-weight:700;
       }
       .hud-label{opacity:.9;font-family:Asap,system-ui,sans-serif;font-weight:700}
+
+      .game-message{
+        margin-bottom:10px;
+        padding:8px 12px;
+        border-radius:10px;
+        background:#e8f5f0;
+        border:1px solid rgba(26,92,74,.2);
+        color:var(--green-dark);
+        font-size:13px;
+        font-weight:700;
+        line-height:1.35;
+      }
+      .game-message.has-key{background:#fff8e6;border-color:rgba(244,196,48,.45);color:#7a5a00}
 
       #mazeHolder{
         width:100%;
@@ -229,7 +300,11 @@
   <body>
     <div class="zim-game">
       <aside class="nav-sidebar">
-        <a class="nav-back" href="../../index.html" aria-label="Back to Home">←</a>
+        <a class="nav-back" href="../../index.html" aria-label="Back to Home">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
       </aside>
 
       <div class="main-shell">
@@ -244,13 +319,18 @@
           <section class="rules-panel">
             <div class="rules-title">How to play</div>
             <div class="rules-text">
-              Navigate the maze and reach the exit. Use arrow keys on desktop or swipe/drag on mobile.
+              Navigate the maze, collect the key, then unlock the gate. Use arrow keys on desktop or swipe/drag on mobile.
             </div>
             <ul class="rules-list">
-              <li>Find the exit as fast as you can.</li>
+              <li>Find the key hidden somewhere in the maze.</li>
+              <li>The gate stays locked until you have the key.</li>
               <li>Fewer moves gives a higher score.</li>
-              <li>Score uploads once when you finish.</li>
             </ul>
+
+            <div class="character-section">
+              <div class="character-title">Choose your character</div>
+              <div class="character-grid" id="characterGrid"></div>
+            </div>
 
             <div class="profile-panel" id="profilePanel">
               <div class="profile-row">
@@ -266,10 +346,13 @@
 
           <section class="play-panel">
             <div class="hud">
+              <div class="hud-pill"><span class="hud-label">Character</span><span id="charVal">🧑‍🎓 Vidya</span></div>
+              <div class="hud-pill"><span class="hud-label">Key</span><span id="keyVal">🔍 Find it</span></div>
               <div class="hud-pill"><span class="hud-label">Moves</span><span id="movesVal">0</span></div>
               <div class="hud-pill"><span class="hud-label">Time</span><span id="timeVal">0</span></div>
               <div class="hud-pill"><span class="hud-label">Score</span><span id="scoreVal">0</span></div>
             </div>
+            <div class="game-message" id="gameMessage">First find the key 🔑</div>
             <div id="mazeHolder"></div>
           </section>
         </main>
@@ -353,28 +436,150 @@
           el.appendChild(img);
           return;
         }
-        const initials =
-          (user?.displayName || "P")
-            .trim()
-            .split(/\s+/)
-            .slice(0, 2)
-            .map((w) => w[0]?.toUpperCase())
-            .join("") || "P";
+
         const d = document.createElement("div");
-        d.textContent = initials;
         d.style.width = "100%";
         d.style.height = "100%";
         d.style.display = "flex";
         d.style.alignItems = "center";
         d.style.justifyContent = "center";
-        d.style.fontWeight = "800";
         d.style.color = "#1a5c4a";
         d.style.background = "#1a5c4a14";
+
+        if (!user) {
+          d.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="18" height="18">
+              <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          `;
+          el.appendChild(d);
+          return;
+        }
+
+        const initials =
+          (user?.displayName || "Player")
+            .trim()
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((w) => w[0]?.toUpperCase())
+            .join("") || "P";
+        d.textContent = initials;
+        d.style.fontWeight = "900";
         el.appendChild(d);
       }
 
       // ZIM is loaded as an ES module above and exposed on window.
       const zim = window.zim;
+
+      const CHARACTERS = [
+        { id: "vidya", name: "Vidya", emoji: "🧑‍🎓", color: "#2c3e5a" },
+        { id: "simha", name: "Simha", emoji: "🦁", color: "#e87722" },
+        { id: "gaja", name: "Gaja", emoji: "🐘", color: "#5a6a7a" },
+        { id: "mayura", name: "Mayura", emoji: "🦚", color: "#1a8c5c" },
+        { id: "vanara", name: "Vanara", emoji: "🐒", color: "#8b5a2b" },
+        { id: "naga", name: "Naga", emoji: "🐍", color: "#3d6b4f" }
+      ];
+      const CHARACTER_STORAGE_KEY = "mazeSelectedCharacter";
+
+      function loadSavedCharacter() {
+        try {
+          const id = localStorage.getItem(CHARACTER_STORAGE_KEY);
+          return CHARACTERS.find((c) => c.id === id) || CHARACTERS[0];
+        } catch {
+          return CHARACTERS[0];
+        }
+      }
+
+      function drawCellEmoji(stage, ox, oy, cellSize, cellX, cellY, emoji, sizeFactor = 0.5) {
+        const cx = ox + cellX * cellSize + cellSize / 2;
+        const cy = oy + cellY * cellSize + cellSize / 2;
+        const fontSize = Math.max(20, Math.floor(cellSize * sizeFactor));
+        const TextCtor = window.createjs?.Text || zim.Text;
+        if (TextCtor) {
+          const emojiText = new TextCtor(
+            emoji,
+            `bold ${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`,
+            "#1a1a1a"
+          );
+          emojiText.textAlign = "center";
+          emojiText.textBaseline = "middle";
+          emojiText.x = cx;
+          emojiText.y = cy;
+          stage.addChild(emojiText);
+          return;
+        }
+
+        new zim.Label({
+          text: emoji,
+          size: fontSize,
+          align: "center",
+          valign: "center"
+        })
+          .pos(cx, cy, "CENTER", "CENTER")
+          .addTo(stage);
+      }
+
+      function drawPlayerCharacter(stage, ox, oy, cellSize, p, char) {
+        drawCellEmoji(stage, ox, oy, cellSize, p.x, p.y, char.emoji, 0.55);
+      }
+
+      function bfsDistances(maze, cols, rows, start) {
+        const dist = Array.from({ length: rows }, () => Array(cols).fill(undefined));
+        const queue = [{ x: start.x, y: start.y, d: 0 }];
+        dist[start.y][start.x] = 0;
+
+        while (queue.length) {
+          const { x, y, d } = queue.shift();
+          const cell = maze[y][x];
+          const neighbors = [];
+          if (y > 0 && !cell.walls.top) neighbors.push({ x, y: y - 1 });
+          if (x < cols - 1 && !cell.walls.right) neighbors.push({ x: x + 1, y });
+          if (y < rows - 1 && !cell.walls.bottom) neighbors.push({ x, y: y + 1 });
+          if (x > 0 && !cell.walls.left) neighbors.push({ x: x - 1, y });
+
+          for (const n of neighbors) {
+            if (dist[n.y][n.x] !== undefined) continue;
+            dist[n.y][n.x] = d + 1;
+            queue.push({ x: n.x, y: n.y, d: d + 1 });
+          }
+        }
+
+        return dist;
+      }
+
+      function findKeyLocation(maze, cols, rows, start, goal) {
+        const fromStart = bfsDistances(maze, cols, rows, start);
+        const fromGoal = bfsDistances(maze, cols, rows, goal);
+
+        let best = null;
+        let bestScore = -1;
+
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (x === start.x && y === start.y) continue;
+            if (x === goal.x && y === goal.y) continue;
+            const ds = fromStart[y][x];
+            const dg = fromGoal[y][x];
+            if (ds === undefined || dg === undefined) continue;
+            const total = ds + dg;
+            if (total > bestScore) {
+              bestScore = total;
+              best = { x, y };
+            }
+          }
+        }
+
+        return best || { x: Math.floor(cols / 2), y: Math.floor(rows / 2) };
+      }
+
+      function setupMazeRun(cols, rows) {
+        const maze = generateMaze(cols, rows);
+        const start = { x: 0, y: 0 };
+        const goal = { x: cols - 1, y: rows - 1 };
+        const key = findKeyLocation(maze, cols, rows, start, goal);
+        return { maze, goal, key };
+      }
 
       function generateMaze(cols, rows) {
         // DFS / recursive backtracker
@@ -431,10 +636,15 @@
         const [seconds, setSeconds] = useState(0);
         const [finished, setFinished] = useState(false);
         const [scoreUploaded, setScoreUploaded] = useState(false);
+        const [selectedCharacter, setSelectedCharacter] = useState(() => loadSavedCharacter());
+        const [hasKey, setHasKey] = useState(false);
+        const [gameMessage, setGameMessage] = useState("First find the key 🔑");
 
         const timerRef = useRef(null);
         const frameRef = useRef(null);
         const stageRef = useRef(null);
+        const selectedCharacterRef = useRef(selectedCharacter);
+        const hasKeyRef = useRef(false);
 
         const config = useMemo(() => {
           // Similar difficulty feel to other games: responsive to screen size.
@@ -442,9 +652,14 @@
           return { cols: isSmall ? 12 : 16, rows: isSmall ? 10 : 12 };
         }, []);
 
-        const mazeRef = useRef(generateMaze(config.cols, config.rows));
+        const initialRun = useMemo(() => setupMazeRun(
+          window.matchMedia("(max-width: 860px)").matches ? 12 : 16,
+          window.matchMedia("(max-width: 860px)").matches ? 10 : 12
+        ), []);
+        const mazeRef = useRef(initialRun.maze);
         const playerRef = useRef({ x: 0, y: 0 });
-        const goalRef = useRef({ x: config.cols - 1, y: config.rows - 1 });
+        const goalRef = useRef(initialRun.goal);
+        const keyRef = useRef(initialRun.key);
 
         function computeScore(nextMoves, nextSeconds) {
           // High-level scoring similar to Memory Match style: big base, penalties.
@@ -477,7 +692,43 @@
           document.getElementById("movesVal").textContent = String(moves);
           document.getElementById("timeVal").textContent = String(seconds);
           document.getElementById("scoreVal").textContent = String(score);
-        }, [moves, seconds, score]);
+          const charVal = document.getElementById("charVal");
+          if (charVal) charVal.textContent = `${selectedCharacter.emoji} ${selectedCharacter.name}`;
+          const keyVal = document.getElementById("keyVal");
+          if (keyVal) keyVal.textContent = hasKey ? "🔑 Got it!" : "🔍 Find it";
+          const messageEl = document.getElementById("gameMessage");
+          if (messageEl) {
+            messageEl.textContent = gameMessage;
+            messageEl.classList.toggle("has-key", hasKey);
+          }
+        }, [moves, seconds, score, selectedCharacter, hasKey, gameMessage]);
+
+        useEffect(() => {
+          selectedCharacterRef.current = selectedCharacter;
+          draw();
+        }, [selectedCharacter]);
+
+        useEffect(() => {
+          const grid = document.getElementById("characterGrid");
+          if (!grid) return;
+          grid.innerHTML = "";
+          CHARACTERS.forEach((char) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = `character-card${selectedCharacter.id === char.id ? " selected" : ""}`;
+            btn.setAttribute("aria-pressed", selectedCharacter.id === char.id ? "true" : "false");
+            btn.innerHTML = `<span class="character-emoji">${escapeHTML(char.emoji)}</span><span class="character-name">${escapeHTML(char.name)}</span>`;
+            btn.onclick = () => {
+              setSelectedCharacter(char);
+              try {
+                localStorage.setItem(CHARACTER_STORAGE_KEY, char.id);
+              } catch {
+                // ignore storage errors
+              }
+            };
+            grid.appendChild(btn);
+          });
+        }, [selectedCharacter]);
 
         useEffect(() => {
           // Profile UI (static DOM)
@@ -530,9 +781,15 @@
           setScoreUploaded(false);
           setMoves(0);
           setSeconds(0);
+          setHasKey(false);
+          hasKeyRef.current = false;
+          setGameMessage("First find the key 🔑");
           playerRef.current = { x: 0, y: 0 };
-          mazeRef.current = generateMaze(config.cols, config.rows);
-          goalRef.current = { x: config.cols - 1, y: config.rows - 1 };
+          const run = setupMazeRun(config.cols, config.rows);
+          mazeRef.current = run.maze;
+          goalRef.current = run.goal;
+          keyRef.current = run.key;
+          document.getElementById("winBackdrop")?.classList.remove("show");
           draw();
         }
 
@@ -571,12 +828,25 @@
           if (dir === "left" && canMove(p, "left")) next.x -= 1;
           if (next.x === p.x && next.y === p.y) return;
 
+          const g = goalRef.current;
+          const key = keyRef.current;
+          if (next.x === g.x && next.y === g.y && !hasKeyRef.current) {
+            setGameMessage("You need a key to unlock the door!");
+            return;
+          }
+
           playerRef.current = next;
           setMoves((m) => m + 1);
+
+          if (!hasKeyRef.current && next.x === key.x && next.y === key.y) {
+            hasKeyRef.current = true;
+            setHasKey(true);
+            setGameMessage("You found the key! Now unlock the gate.");
+          }
+
           draw();
 
-          const g = goalRef.current;
-          if (next.x === g.x && next.y === g.y) {
+          if (next.x === g.x && next.y === g.y && hasKeyRef.current) {
             stopTimer();
             setFinished(true);
             const final = computeScore(moves + 1, seconds);
@@ -622,15 +892,30 @@
           wall.graphics.endStroke();
 
           const g = goalRef.current;
-          new zim.Rectangle(cellSize - 10, cellSize - 10, "#f4c430")
+          const gateColor = hasKeyRef.current ? "#f4c430" : "#6b6b6b";
+          new zim.Rectangle(cellSize - 10, cellSize - 10, gateColor)
             .pos(ox + g.x * cellSize + 5, oy + g.y * cellSize + 5)
             .addTo(stage)
-            .alp(0.85);
+            .alp(hasKeyRef.current ? 0.9 : 0.8);
+
+          drawCellEmoji(
+            stage,
+            ox,
+            oy,
+            cellSize,
+            g.x,
+            g.y,
+            hasKeyRef.current ? "🚪" : "🔒",
+            0.42
+          );
+
+          if (!hasKeyRef.current) {
+            const k = keyRef.current;
+            drawCellEmoji(stage, ox, oy, cellSize, k.x, k.y, "🔑", 0.42);
+          }
 
           const p = playerRef.current;
-          new zim.Circle(Math.max(8, Math.floor(cellSize * 0.22)), "#2c3e5a")
-            .pos(ox + p.x * cellSize + cellSize / 2, oy + p.y * cellSize + cellSize / 2, "CENTER", "CENTER")
-            .addTo(stage);
+          drawPlayerCharacter(stage, ox, oy, cellSize, p, selectedCharacterRef.current);
 
           stage.update();
         }
@@ -774,6 +1059,7 @@
           };
           // Render avatar in icon
           const host = btn;
+          host.innerHTML = "";
           const icon = document.createElement("div");
           icon.style.width = "32px";
           icon.style.height = "32px";
