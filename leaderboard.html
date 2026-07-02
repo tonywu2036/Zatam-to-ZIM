@@ -614,6 +614,7 @@
           <button class="tab" data-game="ticTacToe">❌ Tic Tac Toe</button>
           <button class="tab" data-game="rps">✂️ RPS</button>
           <button class="tab" data-game="2048">🔢 2048</button>
+          <button class="tab" data-game="sudoku">🔢 Sudoku</button>
         </div>
 
         <div class="date-controls">
@@ -688,6 +689,7 @@
           <div class="filter-row" data-side-game="memory"><span>Memory Match</span><span>All</span></div>
           <div class="filter-row" data-side-game="laddersSnakes"><span>Ladders & Snakes</span><span>All</span></div>
           <div class="filter-row" data-side-game="2048"><span>2048</span><span>All</span></div>
+          <div class="filter-row" data-side-game="sudoku"><span>Sudoku</span><span>All</span></div>
         </div>
 
         <div class="side-card">
@@ -798,6 +800,7 @@
             ticTacToe: "❌ Tic Tac Toe",
             rps: "✂️ RPS",
             game2048: "🔢 2048",
+            sudoku: "🔢 Sudoku",
 
             rank: "Rank",
             player: "Player",
@@ -840,6 +843,7 @@
             ticTacToe: "❌ त्रिरेखा",
             rps: "✂️ शिला पत्रम्",
             game2048: "🔢 २०४८",
+            sudoku: "🔢 सुडोकू",
 
             rank: "स्थानम्",
             player: "क्रीडकः",
@@ -1142,6 +1146,7 @@
       if (gameName.includes("Tic")) return "Tic";
       if (gameName.includes("Rock")) return "RPS";
       if (gameName.includes("2048")) return "2048";
+      if (gameName.includes("Sudoku")) return "Sudoku";
       return gameName;
     }
 
@@ -1248,6 +1253,9 @@ sideFilterRows.forEach((row) => {
 
     document.querySelector('[data-game="2048"]').textContent =
         t.game2048;
+
+    document.querySelector('[data-game="sudoku"]').textContent =
+        t.sudoku;
 
     const headers = document.querySelectorAll("th");
 
