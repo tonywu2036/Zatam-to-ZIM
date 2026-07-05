@@ -101,7 +101,11 @@
     onAuthStateChanged,
     collection,
     addDoc,
-    serverTimestamp
+    serverTimestamp,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc
   } from "../../firebase-config.js";
 
   const loginBtn = document.getElementById("loginBtn");
@@ -113,29 +117,57 @@
   window.currentUser = null;
 
     window.save2048Score = async function(finalScore) {
-    const user = window.currentUser;
+  const user = window.currentUser;
 
-    if (!user) {
-        console.log("User not logged in. Score not saved.");
-        return;
-    }
+  if (!user) {
+    console.log("User not logged in. Score not saved.");
+    return;
+  }
 
-    const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0];
+  const gameId = "2048";
+  const recordId = `${user.uid}_${gameId}_${today}`;
+  const scoreRef = doc(db, "leaderboard", recordId);
 
-    await addDoc(collection(db, "leaderboard"), {
+  try {
+    const existingScore = await getDoc(scoreRef);
+
+    if (!existingScore.exists()) {
+      await setDoc(scoreRef, {
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
         email: user.email || "",
-        gameId: "2048",
+        gameId: gameId,
         gameName: "2048",
         photoURL: user.photoURL || "",
         playerName: user.displayName || "Player",
         score: finalScore,
         scoreDate: today,
         userId: user.uid
-    });
+      });
 
-    console.log("2048 score saved.");
-    };
+      console.log("New daily 2048 score created:", finalScore);
+    } else {
+      const oldScore = existingScore.data().score || 0;
+
+      if (finalScore > oldScore) {
+        await updateDoc(scoreRef, {
+          score: finalScore,
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          playerName: user.displayName || "Player",
+          updatedAt: serverTimestamp()
+        });
+
+        console.log("Daily 2048 score updated:", finalScore);
+      } else {
+        console.log("New score is lower. Existing daily best kept:", oldScore);
+      }
+    }
+  } catch (error) {
+    console.error("2048 score save failed:", error);
+  }
+};
 
 
     homeButton.addEventListener("click", () => {
