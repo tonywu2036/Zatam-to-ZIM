@@ -715,6 +715,13 @@
       transition: transform 0.24s ease;
     }
 
+    .picture-puzzle-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/019-cs(Picture Puzzel)/assets/gurukula.png") center 43% / cover no-repeat;
+    }
+
     .orange {
       background: linear-gradient(135deg, #ff8b3d, #e85b2e);
     }
@@ -1123,6 +1130,13 @@
           </div>
           <p class="slide-caption" data-i18n="slideSudoku">Fill the Sanskrit number grid<span>Sudoku</span></p>
         </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/019-cs(Picture Puzzel)/assets/gurukula.png" alt="Picture Puzzle thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slidePicturePuzzle">Rebuild the gurukula scene<span>Picture Puzzle</span></p>
+        </div>
         <div class="slide-dots" aria-hidden="true">
           <button class="slide-dot active" data-slide-target="0" type="button"></button>
           <button class="slide-dot" data-slide-target="1" type="button"></button>
@@ -1137,6 +1151,7 @@
           <button class="slide-dot" data-slide-target="10" type="button"></button>
           <button class="slide-dot" data-slide-target="11" type="button"></button>
           <button class="slide-dot" data-slide-target="12" type="button"></button>
+          <button class="slide-dot" data-slide-target="13" type="button"></button>
         </div>
         <button class="slide-arrow slide-prev" id="slidePrev" type="button"
           aria-label="Previous slide">&lsaquo;</button>
@@ -1499,6 +1514,25 @@
         </div>
       </div>
     </article>
+
+    <article class="game-card" data-category="puzzle" data-title="picture puzzle jigsaw gurukula sanskrit drag pieces">
+      <div class="game-image picture-puzzle-thumbnail" role="img" aria-label="Gurukula picture puzzle">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="picturePuzzleTitle">Picture Puzzle</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="picturePuzzleDesc">Drag and swap pieces to rebuild a Sanskrit learning scene.</p>
+          <a href="Games/019-cs(Picture Puzzel)/index.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
     <div class="empty-state" data-i18n="emptyState">No games available in this category yet.</div>
 
   </main>
@@ -1593,6 +1627,7 @@
         slideWatch: "Tell time in Sanskrit<span>Analog Watch</span>",
         slideNumerale: "Guess the Devanagari number<span>Numerale</span>",
         slideSudoku: "Fill the Sanskrit number grid<span>Sudoku</span>",
+        slidePicturePuzzle: "Rebuild the gurukula scene<span>Picture Puzzle</span>",
 
         catAll: "▦ ALL",
         catWord: "शब्दः Word Games",
@@ -1636,6 +1671,8 @@
         numeraleDesc: "Guess the 5-digit number in Devanagari script!",
         sudokuTitle: "Sudoku",
         sudokuDesc: "Fill the grid using English or Sanskrit symbols.",
+        picturePuzzleTitle: "Picture Puzzle",
+        picturePuzzleDesc: "Drag and swap pieces to rebuild a Sanskrit learning scene.",
 
         playNow: "Play Now ▶",
         emptyState: "No games found.",
@@ -1675,6 +1712,7 @@
         slideWatch: "संस्कृते समयं वद<span>घटिकायन्त्रम्</span>",
         slideNumerale: "देवनागरीसंख्यां अनुमानय<span>न्यूमरेल</span>",
         slideSudoku: "संस्कृतसंख्याजालकं पूरय<span>सुडोकू</span>",
+        slidePicturePuzzle: "गुरुकुलस्य चित्रं पुनर्निर्मीयताम्<span>चित्र-समस्या</span>",
 
         catAll: "▦ सर्वम्",
         catWord: "शब्दक्रीडाः",
@@ -1718,6 +1756,8 @@
         numeraleDesc: "देवनागरीलिप्या पञ्चाङ्कसंख्यां अनुमानयतु!",
         sudokuTitle: "सुडोकू",
         sudokuDesc: "आङ्ग्ल-संस्कृतचिह्नैः जालकं पूरय।",
+        picturePuzzleTitle: "चित्र-समस्या",
+        picturePuzzleDesc: "खण्डान् कर्षयित्वा संस्कृताध्ययनचित्रं पुनर्निर्मीयताम्।",
 
         playNow: "क्रीडतु ▶",
         emptyState: "क्रीडा न प्राप्ता।",

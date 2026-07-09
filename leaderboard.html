@@ -615,6 +615,7 @@
           <button class="tab" data-game="rps">✂️ RPS</button>
           <button class="tab" data-game="2048">🔢 2048</button>
           <button class="tab" data-game="sudoku">🔢 Sudoku</button>
+          <button class="tab" data-game="picturePuzzle">🖼 Picture Puzzle</button>
         </div>
 
         <div class="date-controls">
@@ -690,6 +691,7 @@
           <div class="filter-row" data-side-game="laddersSnakes"><span>Ladders & Snakes</span><span>All</span></div>
           <div class="filter-row" data-side-game="2048"><span>2048</span><span>All</span></div>
           <div class="filter-row" data-side-game="sudoku"><span>Sudoku</span><span>All</span></div>
+          <div class="filter-row" data-side-game="picturePuzzle"><span>Picture Puzzle</span><span>All</span></div>
         </div>
 
         <div class="side-card">
@@ -801,6 +803,7 @@
             rps: "✂️ RPS",
             game2048: "🔢 2048",
             sudoku: "🔢 Sudoku",
+            picturePuzzle: "🖼 Picture Puzzle",
 
             rank: "Rank",
             player: "Player",
@@ -844,6 +847,7 @@
             rps: "✂️ शिला पत्रम्",
             game2048: "🔢 २०४८",
             sudoku: "🔢 सुडोकू",
+            picturePuzzle: "🖼 चित्र-समस्या",
 
             rank: "स्थानम्",
             player: "क्रीडकः",
@@ -1147,6 +1151,7 @@
       if (gameName.includes("Rock")) return "RPS";
       if (gameName.includes("2048")) return "2048";
       if (gameName.includes("Sudoku")) return "Sudoku";
+      if (gameName.includes("Picture")) return "Picture";
       return gameName;
     }
 
@@ -1256,6 +1261,9 @@ sideFilterRows.forEach((row) => {
 
     document.querySelector('[data-game="sudoku"]').textContent =
         t.sudoku;
+
+    document.querySelector('[data-game="picturePuzzle"]').textContent =
+        t.picturePuzzle;
 
     const headers = document.querySelectorAll("th");
 
