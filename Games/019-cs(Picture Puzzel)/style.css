@@ -80,14 +80,14 @@ button { color: inherit; }
 .lang-btn.active { color: white; background: var(--navy); }
 .icon-button, .icon-link { border: 1px solid var(--line); background: white; font-size: 22px; }
 
-main { width: min(1400px, calc(100% - 32px)); margin: 0 auto; padding: 34px 0 48px; }
+main { width: min(1400px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 28px; }
 
 .intro {
   display: flex;
   justify-content: space-between;
   align-items: end;
   gap: 30px;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
 
 .eyebrow { margin: 0 0 6px; color: #b65f2f; font-size: 12px; font-weight: 800; letter-spacing: 2px; }
@@ -116,8 +116,8 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
 
 .game-shell {
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr);
-  min-height: 660px;
+  grid-template-columns: 260px minmax(0, 1fr) 340px;
+  min-height: 0;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -125,7 +125,7 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
   box-shadow: var(--shadow);
 }
 
-.control-panel { padding: 26px 22px; background: #fff2d5; border-right: 1px solid var(--line); }
+.control-panel { padding: 28px 22px; background: #fff2d5; border-right: 1px solid var(--line); }
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .stat {
   min-width: 0;
@@ -142,6 +142,101 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
 .progress-block > div:first-child { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
 .progress-track { height: 8px; overflow: hidden; border-radius: 4px; background: #e8d5ac; }
 .progress-track span { display: block; width: 0; height: 100%; background: var(--green); transition: width .25s ease; }
+
+.puzzle-gallery-panel {
+  min-width: 0;
+  padding: 24px 22px;
+  background:
+    linear-gradient(180deg, rgba(242, 184, 75, .14), transparent 40%),
+    #fff7e5;
+  border-left: 1px solid var(--line);
+}
+
+.puzzle-picker-block {
+  height: 100%;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #ead7ad;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .55);
+}
+
+.picker-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.picker-heading span { color: #77808b; }
+.picker-heading strong { color: var(--orange); text-align: right; text-transform: none; }
+
+.puzzle-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 146px;
+  align-content: start;
+  gap: 10px;
+  max-height: 360px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 5px 2px 2px;
+}
+
+.puzzle-choice {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #f5deb0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(16, 45, 82, .08);
+}
+
+.puzzle-choice img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  padding: 8px;
+  transition: filter .18s ease;
+}
+
+.puzzle-choice span {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  padding: 3px 4px;
+  color: white;
+  background: rgba(16, 45, 82, .78);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.puzzle-choice:hover,
+.puzzle-choice:focus-visible {
+  border-color: var(--green);
+  outline: 0;
+}
+
+.puzzle-choice:hover img,
+.puzzle-choice:focus-visible img { filter: saturate(1.1) brightness(1.03); }
+
+.puzzle-choice.active {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(242, 184, 75, .35);
+}
 
 .action-list { display: grid; gap: 8px; }
 .action {
@@ -168,7 +263,7 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
 .play-area { min-width: 0; display: grid; place-items: center; align-content: center; padding: 28px; background: #f8f2e5; }
 .board-wrap {
   position: relative;
-  width: min(70vh, 680px, 100%);
+  width: min(68vh, 680px, 100%);
   aspect-ratio: 1;
   border: 10px solid white;
   outline: 2px solid #e4c98f;
@@ -184,7 +279,7 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
   min-width: 0;
   border: 0;
   border-radius: 2px;
-  background-image: url("assets/gurukula.png");
+  background-image: var(--puzzle-image, url("assets/gurukula.png"));
   background-repeat: no-repeat;
   cursor: grab;
   transition: transform .17s ease, filter .17s ease, box-shadow .17s ease;
@@ -250,7 +345,7 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
 }
 
 .play-note {
-  width: min(70vh, 680px, 100%);
+  width: min(68vh, 680px, 100%);
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -286,12 +381,90 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
 .modal-actions { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 24px; }
 .modal-actions a { color: var(--navy); font-weight: 800; }
 
+@media (min-width: 901px) {
+  body { overflow: hidden; }
+
+  .game-header { height: 66px; }
+
+  main {
+    height: calc(100dvh - 66px);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    padding-top: 18px;
+    padding-bottom: 16px;
+  }
+
+  h1 { font-size: clamp(36px, 4vw, 52px); }
+  .intro-copy { margin-top: 6px; }
+
+  .game-shell {
+    height: 100%;
+    max-height: calc(100dvh - 66px - 112px);
+  }
+
+  .control-panel {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 18px;
+  }
+
+  .stat-grid { gap: 7px; }
+  .stat { padding: 9px 11px; }
+  .stat strong { font-size: 22px; }
+  .progress-block { margin: 12px 0; }
+
+  .puzzle-picker-block {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .puzzle-gallery-panel {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .puzzle-picker {
+    min-height: 0;
+    flex: 1 1 auto;
+    max-height: none;
+  }
+
+  .action-list { gap: 7px; }
+  .action { min-height: 40px; }
+  .save-status { margin-top: 12px; }
+
+  .play-area { padding: 20px; }
+  .board-wrap,
+  .play-note {
+    width: min(43vw, calc(100dvh - 66px - 172px), 620px);
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .game-shell { grid-template-columns: 230px minmax(0, 1fr) 300px; }
+  .control-panel { padding-inline: 14px; }
+  .puzzle-gallery-panel { padding: 14px; }
+  .puzzle-picker { grid-auto-rows: 128px; gap: 8px; }
+  .puzzle-choice img { padding: 7px; }
+  .board-wrap,
+  .play-note {
+    width: min(40vw, calc(100dvh - 66px - 172px), 560px);
+  }
+}
+
 @media (max-width: 900px) {
   .game-shell { grid-template-columns: 1fr; }
   .control-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+  .puzzle-gallery-panel { border-left: 0; border-top: 1px solid var(--line); padding: 20px; }
+  .puzzle-picker-block { height: auto; }
   .stat-grid { grid-template-columns: repeat(3, 1fr); }
   .stat:last-child { grid-column: auto; }
   .action-list { grid-template-columns: 1fr 1fr; }
+  .puzzle-picker { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 128px; max-height: 360px; }
   .save-status, .leaderboard-link { display: inline-block; margin-right: 12px; }
   .board-wrap, .play-note { width: min(76vh, 680px, 100%); }
 }
@@ -306,6 +479,9 @@ h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); 
   .difficulty > span { margin-right: auto; }
   .difficulty-btn { padding-inline: 10px; }
   .control-panel { padding: 18px; }
+  .puzzle-gallery-panel { padding: 16px; }
+  .puzzle-picker { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 150px; max-height: 420px; }
+  .puzzle-choice img { padding: 10px; }
   .play-area { padding: 22px 12px; }
   .play-note { align-items: flex-start; }
   .play-note > span:first-child { max-width: 70%; }

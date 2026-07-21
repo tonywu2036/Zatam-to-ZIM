@@ -21,6 +21,7 @@ const translations = {
     moves: "Moves",
     score: "Score",
     progress: "Progress",
+    choosePuzzle: "Choose puzzle",
     newGame: "New puzzle",
     hint: "Show a hint",
     preview: "Hold to preview",
@@ -81,6 +82,45 @@ const translations = {
   }
 };
 
+const puzzles = [
+  { id: "gurukula", name: "Gurukula", src: "assets/gurukula.png" },
+  { id: "acharya", name: "Acharya", src: "assets/acharya.png" },
+  { id: "agni", name: "Agni", src: "assets/agni.png" },
+  { id: "akasha", name: "Akasha", src: "assets/akasha.png" },
+  { id: "ananda", name: "Ananda", src: "assets/ananda.png" },
+  { id: "bala", name: "Bala", src: "assets/bala.png" },
+  { id: "chandra", name: "Chandra", src: "assets/chandra.png" },
+  { id: "chatra", name: "Chatra", src: "assets/chatra.png" },
+  { id: "gaja", name: "Gaja", src: "assets/gaja.png" },
+  { id: "gau", name: "Gau", src: "assets/gau.png" },
+  { id: "griham", name: "Griham", src: "assets/griham.png" },
+  { id: "gyanam", name: "Gyanam", src: "assets/gyanam.png" },
+  { id: "jalam", name: "Jalam", src: "assets/jalam.png" },
+  { id: "kala", name: "Kala", src: "assets/kala.png" },
+  { id: "karuna", name: "Karuna", src: "assets/karuna.png" },
+  { id: "mana", name: "Mana", src: "assets/mana.png" },
+  { id: "mata", name: "Mata", src: "assets/mata.png" },
+  { id: "mitram", name: "Mitram", src: "assets/mitram.png" },
+  { id: "nadi", name: "Nadi", src: "assets/nadi.png" },
+  { id: "pakshi", name: "Pakshi", src: "assets/pakshi.png" },
+  { id: "parvata", name: "Parvata", src: "assets/parvata.png" },
+  { id: "phalam", name: "Phalam", src: "assets/phalam.png" },
+  { id: "pita", name: "Pita", src: "assets/pita.png" },
+  { id: "prithivi", name: "Prithivi", src: "assets/prithivi.png" },
+  { id: "pushpam", name: "Pushpam", src: "assets/pushpam.png" },
+  { id: "pustakam", name: "Pustakam", src: "assets/pustakam.png" },
+  { id: "raja", name: "Raja", src: "assets/raja.png" },
+  { id: "rani", name: "Rani", src: "assets/rani.png" },
+  { id: "samudra", name: "Samudra", src: "assets/samudra.png" },
+  { id: "satya", name: "Satya", src: "assets/satya.png" },
+  { id: "shakti", name: "Shakti", src: "assets/shakti.png" },
+  { id: "surya", name: "Surya", src: "assets/surya.png" },
+  { id: "swatantryam", name: "Swatantryam", src: "assets/swatantryam.png" },
+  { id: "vak", name: "Vak", src: "assets/vak.png" },
+  { id: "vishvam", name: "Vishvam", src: "assets/vishvam.png" },
+  { id: "vriksha", name: "Vriksha", src: "assets/vriksha.png" }
+];
+
 const board = document.getElementById("puzzleBoard");
 const timerEl = document.getElementById("timer");
 const movesEl = document.getElementById("moves");
@@ -92,6 +132,8 @@ const pieceCountEl = document.getElementById("pieceCount");
 const boardMessage = document.getElementById("boardMessage");
 const startOverlay = document.getElementById("startOverlay");
 const previewImage = document.getElementById("previewImage");
+const puzzlePicker = document.getElementById("puzzlePicker");
+const selectedPuzzleName = document.getElementById("selectedPuzzleName");
 const winModal = document.getElementById("winModal");
 const winSummary = document.getElementById("winSummary");
 const saveStatus = document.getElementById("saveStatus");
@@ -110,6 +152,7 @@ let currentUser = null;
 let scoreUploaded = false;
 let language = localStorage.getItem("picturePuzzleLanguage") || "en";
 let soundEnabled = localStorage.getItem("picturePuzzleSound") !== "off";
+let selectedPuzzle = puzzles.find((puzzle) => puzzle.id === localStorage.getItem("picturePuzzleImage")) || puzzles[0];
 
 function t(key) {
   return translations[language][key];
@@ -129,6 +172,7 @@ function shuffledOrder() {
 function buildBoard() {
   board.innerHTML = "";
   board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+  board.style.setProperty("--puzzle-image", `url("${selectedPuzzle.src}")`);
   order.forEach((pieceId, position) => {
     const piece = document.createElement("button");
     const row = Math.floor(pieceId / size);
@@ -147,6 +191,40 @@ function buildBoard() {
     board.appendChild(piece);
   });
   updateStats();
+}
+
+function updatePuzzleAssets() {
+  previewImage.src = selectedPuzzle.src;
+  previewImage.alt = `${selectedPuzzle.name} completed puzzle`;
+  selectedPuzzleName.textContent = selectedPuzzle.name;
+  board.style.setProperty("--puzzle-image", `url("${selectedPuzzle.src}")`);
+}
+
+function renderPuzzlePicker() {
+  puzzlePicker.innerHTML = "";
+  puzzles.forEach((puzzle) => {
+    const choice = document.createElement("button");
+    const isActive = puzzle.id === selectedPuzzle.id;
+    choice.className = "puzzle-choice";
+    choice.type = "button";
+    choice.dataset.puzzle = puzzle.id;
+    choice.classList.toggle("active", isActive);
+    choice.setAttribute("aria-label", `Choose ${puzzle.name} puzzle`);
+    choice.setAttribute("aria-pressed", String(isActive));
+    choice.innerHTML = `<img src="${puzzle.src}" alt=""><span>${puzzle.name}</span>`;
+    puzzlePicker.appendChild(choice);
+  });
+  updatePuzzleAssets();
+}
+
+function choosePuzzle(puzzleId) {
+  const nextPuzzle = puzzles.find((puzzle) => puzzle.id === puzzleId);
+  if (!nextPuzzle || nextPuzzle.id === selectedPuzzle.id) return;
+  selectedPuzzle = nextPuzzle;
+  localStorage.setItem("picturePuzzleImage", selectedPuzzle.id);
+  renderPuzzlePicker();
+  newGame(false);
+  boardMessage.textContent = `${selectedPuzzle.name} selected.`;
 }
 
 function updateStats() {
@@ -349,9 +427,15 @@ function applyLanguage() {
   document.querySelectorAll(".lang-btn").forEach((button) => {
     button.classList.toggle("active", button.dataset.lang === language);
   });
+  renderPuzzlePicker();
   boardMessage.textContent = t("boardMessage");
   if (!currentUser) saveStatus.textContent = t("saveHint");
 }
+
+puzzlePicker.addEventListener("click", (event) => {
+  const choice = event.target.closest(".puzzle-choice");
+  if (choice) choosePuzzle(choice.dataset.puzzle);
+});
 
 board.addEventListener("click", (event) => {
   const piece = event.target.closest(".puzzle-piece");
