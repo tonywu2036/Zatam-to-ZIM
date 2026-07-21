@@ -260,7 +260,7 @@ let PAIRS = ROWS * COLS / 2;
 let selectedImages = ilist[setIndex].slice(0, PAIRS);
 let selectedWords = wlist[setIndex].slice(0, PAIRS);
 
-new Frame(FIT, 1024, 768, light, dark, ready);
+new Frame(FIT, 1024, 768, "#fffaf2", dark, ready);
 
 function ready() {
     Ticker.always();
