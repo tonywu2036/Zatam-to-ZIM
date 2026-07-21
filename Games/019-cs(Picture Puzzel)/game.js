@@ -143,6 +143,7 @@ let order = [];
 let moves = 0;
 let seconds = 0;
 let hintsUsed = 0;
+let shufflesUsed = 0;
 let running = false;
 let finished = false;
 let selectedIndex = null;
@@ -240,12 +241,25 @@ function updateStats() {
 }
 
 function calculateScore(final) {
-  const base = size * size * 140;
-  const placement = order.reduce((total, piece, index) => total + (piece === index ? 45 : 0), 0);
-  const movePenalty = Math.max(0, moves - Math.ceil(size * size / 2)) * 7;
-  const hintPenalty = hintsUsed * 35;
-  const timeBonus = final ? Math.max(0, 1500 - seconds * 3) : 0;
-  return Math.max(0, base + placement + timeBonus - movePenalty - hintPenalty);
+  const pieceCount = size * size;
+  const correctPieces = order.reduce((total, piece, index) => total + Number(piece === index), 0);
+  const difficulty = {
+    3: { base: 900, piece: 70, targetMoves: 16, targetSeconds: 90, completion: 700 },
+    4: { base: 1800, piece: 95, targetMoves: 42, targetSeconds: 180, completion: 1400 },
+    5: { base: 3100, piece: 125, targetMoves: 82, targetSeconds: 330, completion: 2400 }
+  }[size];
+  const progressScore = correctPieces * difficulty.piece;
+  const movePenalty = Math.max(0, moves - difficulty.targetMoves) * Math.ceil(difficulty.piece * .42);
+  const timePenalty = Math.max(0, seconds - difficulty.targetSeconds) * Math.ceil(size * 2.4);
+  const hintPenalty = hintsUsed * Math.ceil(difficulty.piece * 1.35);
+  const shufflePenalty = shufflesUsed * Math.ceil(difficulty.piece * 2.5);
+  const completionBonus = final ? difficulty.completion : 0;
+  const cleanBonus = final && hintsUsed === 0 && shufflesUsed === 0 ? Math.round(difficulty.completion * .35) : 0;
+  const efficientBonus = final && moves <= difficulty.targetMoves && seconds <= difficulty.targetSeconds
+    ? Math.round(difficulty.completion * .25)
+    : 0;
+  const rawScore = difficulty.base + progressScore + completionBonus + cleanBonus + efficientBonus - movePenalty - timePenalty - hintPenalty - shufflePenalty;
+  return Math.max(final ? Math.round(pieceCount * difficulty.piece * .4) : 0, rawScore);
 }
 
 function formatTime(value) {
@@ -271,6 +285,7 @@ function newGame(autoStart = false) {
   moves = 0;
   seconds = 0;
   hintsUsed = 0;
+  shufflesUsed = 0;
   running = false;
   finished = false;
   selectedIndex = null;
@@ -357,7 +372,8 @@ function shuffleRemaining() {
     [pieces[index], pieces[swapIndex]] = [pieces[swapIndex], pieces[index]];
   }
   wrongPositions.forEach((position, index) => { order[position] = pieces[index]; });
-  moves += 2;
+  moves += Math.max(2, Math.ceil(wrongPositions.length / size));
+  shufflesUsed += 1;
   boardMessage.textContent = t("shuffleMessage");
   buildBoard();
 }
@@ -403,8 +419,13 @@ async function uploadScore(finalScore) {
       photoURL: currentUser.photoURL || "",
       gameId: "picturePuzzle",
       gameName: "Picture Puzzle",
+      difficulty: size === 3 ? "Easy" : size === 4 ? "Medium" : "Hard",
       score: Math.max(previousBest, finalScore),
       lastScore: finalScore,
+      moves,
+      seconds,
+      hintsUsed,
+      shufflesUsed,
       updatedAt: serverTimestamp(),
       scoreDate: new Date().toISOString().slice(0, 10)
     };
