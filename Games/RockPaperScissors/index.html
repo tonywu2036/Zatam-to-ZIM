@@ -94,13 +94,20 @@
         db,
         onAuthStateChanged,
         collection,
-        addDoc,
         getDocs,
         query,
         orderBy,
         limit,
-        serverTimestamp
+        serverTimestamp,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc
       } from "../../firebase-config.js";
+
+      const LEADERBOARD_COLLECTION = "leaderboard-zatamgame";
+      const RPS_GAME_ID = "rps";
+      const RPS_GAME_NAME = "Rock Paper Scissors";
 
       const PROFILE_SECTION_ID = "rps-profile-section";
       const PROFILE_LB_ID = "rps-profile-leaderboard";
@@ -162,7 +169,8 @@
 
       let currentUser = null;
       let profileWired = false;
-      let scoreUploaded = false;
+      let lastUploadedScore = 0;
+      let uploadInFlight = null;
 
       function escapeHTML(value) {
         return String(value ?? "")
@@ -246,87 +254,129 @@
         return Math.max(100, wins * 1000);
       }
 
-      async function uploadScore(finalScore) {
-        if (scoreUploaded) return;
-
+      async function uploadScore(finalScore, { quiet = false } = {}) {
         const user = auth.currentUser;
         if (!user) {
-          alert(rpsT("loginAlert"));
-          return;
+          if (!quiet) alert(rpsT("loginAlert"));
+          return false;
         }
 
-        if (!Number.isFinite(finalScore) || finalScore <= 0) return;
+        if (!Number.isFinite(finalScore) || finalScore <= 0) return false;
+        if (finalScore <= lastUploadedScore) return false;
+        if (uploadInFlight) return uploadInFlight;
 
-        scoreUploaded = true;
+        const status = document.getElementById("rps-save-status");
+        const today = getTodayDateString();
+        const recordId = `${user.uid}_${RPS_GAME_ID}_${today}`;
+        const scoreRef = doc(db, LEADERBOARD_COLLECTION, recordId);
 
-        const scoreData = {
-          userId: user.uid,
-          playerName: user.displayName || "Player",
-          email: user.email || "",
-          photoURL: user.photoURL || "",
+        uploadInFlight = (async () => {
+          try {
+            const existing = await getDoc(scoreRef);
 
-          gameId: "rps",
-          gameName: "Rock Paper Scissors",
+            if (!existing.exists()) {
+              await setDoc(scoreRef, {
+                userId: user.uid,
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                gameId: RPS_GAME_ID,
+                gameName: RPS_GAME_NAME,
+                score: finalScore,
+                scoreDate: today,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+              lastUploadedScore = finalScore;
+              if (status) {
+                status.textContent = rpsT("savedScore", {
+                  score: Number(finalScore).toLocaleString()
+                });
+              }
+              return true;
+            }
 
-          score: finalScore,
-
-          createdAt: serverTimestamp(),
-          scoreDate: getTodayDateString()
-        };
-
-        try {
-          await addDoc(collection(db, "leaderboard"), scoreData);
-          console.log("RPS score uploaded successfully:", scoreData);
-          const status = document.getElementById("rps-save-status");
-          if (status) {
-            status.textContent = rpsT("savedScore", { score: Number(finalScore).toLocaleString() });
+            const oldScore = Number(existing.data()?.score || 0);
+            if (finalScore > oldScore) {
+              await updateDoc(scoreRef, {
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                score: finalScore,
+                updatedAt: serverTimestamp()
+              });
+              lastUploadedScore = finalScore;
+              if (status) {
+                status.textContent = rpsT("savedScore", {
+                  score: Number(finalScore).toLocaleString()
+                });
+              }
+            } else {
+              lastUploadedScore = Math.max(lastUploadedScore, oldScore);
+              if (status) {
+                status.textContent = rpsT("savedScore", {
+                  score: Number(oldScore).toLocaleString()
+                });
+              }
+            }
+            return true;
+          } catch (error) {
+            console.error("RPS score upload failed:", error);
+            if (status) {
+              status.textContent = rpsT("saveFailed", {
+                error: error?.code || error?.message || "unknown error"
+              });
+            }
+            if (!quiet) alert(rpsT("uploadFailed"));
+            return false;
+          } finally {
+            uploadInFlight = null;
           }
-        } catch (error) {
-          scoreUploaded = false;
-          console.error("RPS score upload failed:", error);
-          const status = document.getElementById("rps-save-status");
-          if (status) {
-            status.textContent = rpsT("saveFailed", {
-              error: error?.code || error?.message || "unknown error"
-            });
-          }
-          alert(rpsT("uploadFailed"));
-        }
+        })();
+
+        return uploadInFlight;
       }
 
-      function finishSession() {
+      async function finishSession({ quiet = false } = {}) {
         const wins = getPlayerWins();
-        if (wins <= 0) return;
-        uploadScore(calculateRpsScore(wins));
+        if (wins <= 0) return false;
+        return uploadScore(calculateRpsScore(wins), { quiet });
       }
 
       function setupSessionScoreUpload() {
-        // Upload once when the player ends a session (Reset), like Memory Match finishGame().
+        // Upload best score so far when Reset is clicked.
         document.addEventListener(
           "click",
           (event) => {
             if (event.target.closest(".reset-btn")) {
-              finishSession();
+              finishSession({ quiet: true });
             }
           },
           true
         );
 
-        // Upload when leaving the game via the back link.
-        const backLink = document.querySelector('a[aria-label="Back to Home"]');
-        backLink?.addEventListener("click", () => {
-          finishSession();
+        // Upload before leaving via back link (wait so Firestore write finishes).
+        const backLink = document.querySelector("[data-rps-back]");
+        backLink?.addEventListener("click", async (event) => {
+          const wins = getPlayerWins();
+          if (wins <= 0) return;
+          event.preventDefault();
+          await finishSession({ quiet: true });
+          window.location.href = backLink.getAttribute("href") || "../../index.html";
         });
 
-        // Allow a new upload after scores are reset to 0.
+        // Upload when wins increase (daily best updates while playing).
         let lastWins = 0;
         setInterval(() => {
           const wins = getPlayerWins();
+          if (wins > lastWins && wins > 0) {
+            uploadScore(calculateRpsScore(wins), { quiet: true });
+          }
           if (lastWins > 0 && wins === 0) {
-            scoreUploaded = false;
+            lastUploadedScore = 0;
           }
           lastWins = wins;
-        }, 500);
+        }, 700);
       }
 
       async function loadRpsLeaderboard(intoEl) {
@@ -334,7 +384,7 @@
         intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">${escapeHTML(rpsT("loading"))}</div>`;
         try {
           const q = query(
-            collection(db, "leaderboard"),
+            collection(db, LEADERBOARD_COLLECTION),
             orderBy("score", "desc"),
             limit(50)
           );
@@ -343,8 +393,9 @@
           snap.forEach((d) => all.push({ id: d.id, ...d.data() }));
 
           const rpsOnly = all.filter((item) => {
-            const g = String(item.gameName || "");
-            return g.toLowerCase().includes("rock") || g.toLowerCase().includes("rps");
+            const id = String(item.gameId || "").toLowerCase();
+            const name = String(item.gameName || "").toLowerCase();
+            return id === RPS_GAME_ID || name.includes("rock") || name.includes("rps");
           });
 
           const top = rpsOnly.slice(0, 5);

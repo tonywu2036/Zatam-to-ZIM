@@ -613,6 +613,7 @@
           <button class="tab" data-game="classic15">🧩 Classic 15</button>
           <button class="tab" data-game="ticTacToe">❌ Tic Tac Toe</button>
           <button class="tab" data-game="rps">✂️ RPS</button>
+          <button class="tab" data-game="maze">🧩 Maze</button>
           <button class="tab" data-game="2048">🔢 2048</button>
           <button class="tab" data-game="sudoku">🔢 Sudoku</button>
           <button class="tab" data-game="picturePuzzle">🖼 Picture Puzzle</button>
@@ -686,6 +687,7 @@
           <div class="filter-row active" data-side-game="all"><span>All Games</span><span>All</span></div>
           <div class="filter-row" data-side-game="classic15"><span>Classic 15 Puzzle</span><span>All</span></div>
           <div class="filter-row" data-side-game="rps"><span>Rock, Paper, Scissors</span><span>All</span></div>
+          <div class="filter-row" data-side-game="maze"><span>Paasha Maze</span><span>All</span></div>
           <div class="filter-row" data-side-game="ticTacToe"><span>Tic Tac Toe</span><span>All</span></div>
           <div class="filter-row" data-side-game="memory"><span>Memory Match</span><span>All</span></div>
           <div class="filter-row" data-side-game="laddersSnakes"><span>Ladders & Snakes</span><span>All</span></div>
@@ -801,6 +803,7 @@
             classic15: "🧩 Classic 15",
             ticTacToe: "❌ Tic Tac Toe",
             rps: "✂️ RPS",
+            maze: "🧩 Maze",
             game2048: "🔢 2048",
             sudoku: "🔢 Sudoku",
             picturePuzzle: "🖼 Picture Puzzle",
@@ -845,6 +848,7 @@
             classic15: "🧩 १५ प्रहेलिका",
             ticTacToe: "❌ त्रिरेखा",
             rps: "✂️ शिला पत्रम्",
+            maze: "🧩 पाशः",
             game2048: "🔢 २०४८",
             sudoku: "🔢 सुडोकू",
             picturePuzzle: "🖼 चित्र-समस्या",
@@ -1149,6 +1153,7 @@
       if (gameName.includes("Classic")) return "Puzzle";
       if (gameName.includes("Tic")) return "Tic";
       if (gameName.includes("Rock")) return "RPS";
+      if (gameName.includes("Paasha") || gameName.includes("Maze")) return "Maze";
       if (gameName.includes("2048")) return "2048";
       if (gameName.includes("Sudoku")) return "Sudoku";
       if (gameName.includes("Picture")) return "Picture";
@@ -1255,6 +1260,9 @@ sideFilterRows.forEach((row) => {
 
     document.querySelector('[data-game="rps"]').textContent =
         t.rps;
+
+    document.querySelector('[data-game="maze"]').textContent =
+        t.maze;
 
     document.querySelector('[data-game="2048"]').textContent =
         t.game2048;

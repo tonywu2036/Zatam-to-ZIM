@@ -581,10 +581,16 @@
         auth,
         onAuthStateChanged,
         db,
-        collection,
-        addDoc,
-        serverTimestamp
+        serverTimestamp,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc
       } from "../../firebase-config.js";
+
+      const LEADERBOARD_COLLECTION = "leaderboard-zatamgame";
+      const MAZE_GAME_ID = "maze";
+      const MAZE_GAME_NAME = "Paasha Maze";
 
       const html = htm.bind(React.createElement);
 
@@ -1211,24 +1217,57 @@
             alert(mazeT(lang, "loginAlert"));
             return;
           }
+          if (!Number.isFinite(finalScore) || finalScore <= 0) return;
+
           setScoreUploaded(true);
           const saveStatus = document.getElementById("saveStatus");
-
-          const scoreData = {
-            userId: user.uid,
-            playerName: user.displayName || "Player",
-            email: user.email || "",
-            photoURL: user.photoURL || "",
-            gameId: "maze",
-            gameName: "Paasha Maze",
-            score: finalScore,
-            createdAt: serverTimestamp(),
-            scoreDate: todayString()
-          };
+          const today = todayString();
+          const recordId = `${user.uid}_${MAZE_GAME_ID}_${today}`;
+          const scoreRef = doc(db, LEADERBOARD_COLLECTION, recordId);
 
           try {
-            await addDoc(collection(db, "leaderboard"), scoreData);
-            if (saveStatus) saveStatus.textContent = mazeT(lang, "savedScore", { score: finalScore.toLocaleString() });
+            const existing = await getDoc(scoreRef);
+
+            if (!existing.exists()) {
+              await setDoc(scoreRef, {
+                userId: user.uid,
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                gameId: MAZE_GAME_ID,
+                gameName: MAZE_GAME_NAME,
+                score: finalScore,
+                scoreDate: today,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+              if (saveStatus) {
+                saveStatus.textContent = mazeT(lang, "savedScore", {
+                  score: finalScore.toLocaleString()
+                });
+              }
+              return;
+            }
+
+            const oldScore = Number(existing.data()?.score || 0);
+            if (finalScore > oldScore) {
+              await updateDoc(scoreRef, {
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                score: finalScore,
+                updatedAt: serverTimestamp()
+              });
+              if (saveStatus) {
+                saveStatus.textContent = mazeT(lang, "savedScore", {
+                  score: finalScore.toLocaleString()
+                });
+              }
+            } else if (saveStatus) {
+              saveStatus.textContent = mazeT(lang, "savedScore", {
+                score: oldScore.toLocaleString()
+              });
+            }
           } catch (err) {
             setScoreUploaded(false);
             if (saveStatus) {
