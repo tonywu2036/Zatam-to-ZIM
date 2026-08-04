@@ -745,8 +745,6 @@
     import {
       auth,
       db,
-      provider,
-      signInWithPopup,
       signOut,
       onAuthStateChanged,
       collection,
@@ -948,15 +946,31 @@
       return getDefaultAvatar(playerName || "Player");
     }
 
-    loginBtn.addEventListener("click", async () => {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        console.log("Login success:", result.user);
-      } catch (error) {
-        console.error("Login error code:", error.code);
-        console.error("Login error message:", error.message);
-        alert("Login failed: " + error.code);
+    function maskEmail(email) {
+      if (!email || !email.includes("@")) {
+        return "";
       }
+
+      const atIndex = email.lastIndexOf("@");
+      const localPart = email.slice(0, atIndex);
+      const domain = email.slice(atIndex + 1);
+
+      if (!localPart || !domain) {
+        return "";
+      }
+
+      if (localPart.length === 1) {
+        return `${localPart}***@${domain}`;
+      }
+
+      const firstCharacter = localPart.charAt(0);
+      const lastCharacter = localPart.charAt(localPart.length - 1);
+
+      return `${firstCharacter}***${lastCharacter}@${domain}`;
+    }
+
+    loginBtn.addEventListener("click", () => {
+      window.location.href = "./login.html";
     });
 
     logoutBtn.addEventListener("click", async () => {
@@ -1065,7 +1079,7 @@
         const medal = getRankDisplay(rank);
 
         const playerName = player.playerName || player.name || "Player";
-        const email = player.email || "";
+        const email = maskEmail(player.email || "");
         const score = player.score || player.points || 0;
         const gameName = player.gameName || "Unknown Game";
         const photoURL = player.photoURL || "";
