@@ -84,12 +84,14 @@ import {
     signInWithPopup,
     signOut,
     onAuthStateChanged,
-    collection,
-    addDoc,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
     serverTimestamp
 } from "../../firebase-config.js";
 
-new Frame(FIT, 1024, 768, light, dark, ready);
+new Frame(FIT, 1024, 768, "#fffaf2", dark, ready);
 
 function ready() {
 
@@ -688,29 +690,56 @@ function ready() {
         const user = auth.currentUser;
 
         if (!user) {
-            alert("Please login before saving your score.");
+            console.log("User is not logged in. Score was not saved.");
             return;
         }
 
         scoreUploaded = true;
 
-        const scoreData = {
-            userId: user.uid,
-            playerName: user.displayName || "Player",
-            email: user.email || "",
-            photoURL: user.photoURL || "",
-
-            gameId: "shabd",
-            gameName: "Shabd Puzzle",
-
-            score: finalScore,
-            createdAt: serverTimestamp(),
-            scoreDate: getTodayDateString()
-        };
+        const gameId = "shabd";
+        const gameName = "Shabd Puzzle";
+        const today = getTodayDateString();
+        const recordId = `${user.uid}_${gameId}_${today}`;
+        const scoreRef = doc(db, "leaderboard-zatamgame", recordId);
 
         try {
-            await addDoc(collection(db, "leaderboard"), scoreData);
-            console.log("Shabd Puzzle score uploaded successfully:", scoreData);
+            const existingSnapshot = await getDoc(scoreRef);
+
+            if (!existingSnapshot.exists()) {
+                await setDoc(scoreRef, {
+                    userId: user.uid,
+                    playerName: user.displayName || "Player",
+                    email: user.email || "",
+                    photoURL: user.photoURL || "",
+                    gameId: gameId,
+                    gameName: gameName,
+                    score: finalScore,
+                    scoreDate: today,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+
+                console.log("Daily Shabd score created:", finalScore);
+                return;
+            }
+
+            const existingData = existingSnapshot.data();
+            const oldScore = Number(existingData.score) || 0;
+
+            if (finalScore > oldScore) {
+                await updateDoc(scoreRef, {
+                    playerName: user.displayName || "Player",
+                    email: user.email || "",
+                    photoURL: user.photoURL || "",
+                    gameName: gameName,
+                    score: finalScore,
+                    updatedAt: serverTimestamp()
+                });
+
+                console.log(`Daily Shabd score improved: ${oldScore} → ${finalScore}`);
+            } else {
+                console.log(`Existing daily score kept: ${oldScore}. New score: ${finalScore}`);
+            }
         } catch (error) {
             scoreUploaded = false;
             console.error("Shabd Puzzle score upload failed:", error);

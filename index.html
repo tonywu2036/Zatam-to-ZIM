@@ -715,6 +715,34 @@
       transition: transform 0.24s ease;
     }
 
+    .picture-puzzle-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/019-cs(Picture Puzzel)/assets/gurukula.png") center 43% / cover no-repeat;
+    }
+
+    .pictionary-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/SanskritPictionary/cover.png") center center / cover no-repeat;
+    }
+
+    .wordcomplex-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/WordComplex/cover.jpg") center center / cover no-repeat;
+    }
+
+    .monopoly-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/SanskritMonopoly/cover.png") center center / cover no-repeat;
+    }
+
     .orange {
       background: linear-gradient(135deg, #ff8b3d, #e85b2e);
     }
@@ -834,6 +862,11 @@
     .purple-pill {
       background: #e4c8ff;
       color: #67379b;
+    }
+
+    .pink-pill {
+      background: #ffc2d1;
+      color: #800e2e;
     }
 
     .game-bottom {
@@ -960,10 +993,93 @@
         min-width: 220px;
       }
     }
+
+    /* Custom modal */
+    .zatam-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(11, 43, 79, 0.45);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .zatam-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .zatam-modal {
+      background: #fffaf2;
+      border: 1.5px solid #eadfce;
+      border-radius: 16px;
+      box-shadow: 0 24px 48px rgba(11, 43, 79, 0.22);
+      max-width: 420px;
+      width: 90%;
+      padding: 32px 28px 24px;
+      text-align: center;
+      transform: translateY(18px) scale(0.96);
+      transition: transform 0.3s ease;
+    }
+
+    .zatam-overlay.visible .zatam-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .zatam-modal-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #f6b23b, #ffd36b);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      box-shadow: 0 6px 16px rgba(246, 178, 59, 0.3);
+    }
+
+    .zatam-modal p {
+      color: #24394f;
+      font-size: 16px;
+      line-height: 1.55;
+      margin-bottom: 22px;
+    }
+
+    .zatam-modal-btn {
+      background: #0b2b4f;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 36px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .zatam-modal-btn:hover {
+      background: #143d6b;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(11, 43, 79, 0.2);
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- Custom modal -->
+  <div class="zatam-overlay" id="zatamOverlay">
+    <div class="zatam-modal">
+      <div class="zatam-modal-icon">💡</div>
+      <p id="zatamModalMsg"></p>
+      <button class="zatam-modal-btn" id="zatamModalOk">OK</button>
+    </div>
+  </div>
 
   <header>
     <div class="logo">
@@ -1027,6 +1143,27 @@
       <div class="hero-card card3">म</div>
       <div class="game-slideshow" aria-label="Featured games">
         <div class="slide active">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/SanskritPictionary/cover.png" alt="Sanskrit Pictionary thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slidePictionary">Draw and guess Sanskrit words live<span>Sanskrit Pictionary</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/WordComplex/cover.jpg" alt="Word Complex thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slideWordComplex">Learn, play and explore Sanskrit words<span>Word Complex</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/SanskritMonopoly/cover.png" alt="Sanskrit Monopoly thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slideMonopoly">Buy, trade and learn Sanskrit properties<span>Sanskrit Monopoly</span></p>
+        </div>
+        <div class="slide">
           <div class="slide-preview orange">
             <span class="new-tag" data-i18n="newTag">NEW</span>
             <div class="slide-puzzle-grid" aria-hidden="true">
@@ -1123,6 +1260,13 @@
           </div>
           <p class="slide-caption" data-i18n="slideSudoku">Fill the Sanskrit number grid<span>Sudoku</span></p>
         </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/019-cs(Picture Puzzel)/assets/gurukula.png" alt="Picture Puzzle thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slidePicturePuzzle">Rebuild the gurukula scene<span>Picture Puzzle</span></p>
+        </div>
         <div class="slide-dots" aria-hidden="true">
           <button class="slide-dot active" data-slide-target="0" type="button"></button>
           <button class="slide-dot" data-slide-target="1" type="button"></button>
@@ -1137,6 +1281,10 @@
           <button class="slide-dot" data-slide-target="10" type="button"></button>
           <button class="slide-dot" data-slide-target="11" type="button"></button>
           <button class="slide-dot" data-slide-target="12" type="button"></button>
+          <button class="slide-dot" data-slide-target="13" type="button"></button>
+          <button class="slide-dot" data-slide-target="14" type="button"></button>
+          <button class="slide-dot" data-slide-target="15" type="button"></button>
+          <button class="slide-dot" data-slide-target="16" type="button"></button>
         </div>
         <button class="slide-arrow slide-prev" id="slidePrev" type="button"
           aria-label="Previous slide">&lsaquo;</button>
@@ -1146,8 +1294,10 @@
     </div>
   </section>
 
+
   <section class="category-bar">
     <button class="category active" data-filter="all" data-i18n="catAll">▦ ALL</button>
+    <button class="category wide" data-filter="multiplayer" data-i18n="catMultiplayer">👥 Multiplayer</button>
     <button class="category wide" data-filter="word" data-i18n="catWord">शब्दः Word Games</button>
     <button class="category wide" data-filter="board" data-i18n="catBoard">🎲 Board Games</button>
     <button class="category" data-filter="puzzle" data-i18n="catPuzzle">🧩 Puzzles</button>
@@ -1159,6 +1309,63 @@
   </section>
 
   <main class="games" id="gamesSection">
+
+    <article class="game-card" data-category="multiplayer" data-title="sanskrit pictionary drawing guess word multiplayer game चित्रम्">
+      <div class="game-image pictionary-thumbnail" role="img" aria-label="Sanskrit Pictionary">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="pictionaryTitle">Sanskrit Pictionary</h3>
+        <div class="meta">
+          <span class="pill pink-pill" data-i18n="multiplayerTag">Multiplayer</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="pictionaryDesc">Draw and guess Sanskrit words with friends online in real-time!</p>
+          <a href="https://sanskrit-pictionary.vercel.app/welcome" target="_blank" rel="noopener noreferrer" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="multiplayer" data-title="word complex learn play explore sanskrit words multiplayer">
+      <div class="game-image wordcomplex-thumbnail" role="img" aria-label="Word Complex">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="wordComplexTitle">Word Complex</h3>
+        <div class="meta">
+          <span class="pill pink-pill" data-i18n="multiplayerTag">Multiplayer</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="wordComplexDesc">Learn, play and explore Sanskrit words in a fun multiplayer challenge!</p>
+          <a href="https://word-complex.vercel.app/" target="_blank" rel="noopener noreferrer" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="multiplayer" data-title="sanskrit monopoly board property trade buy sell multiplayer">
+      <div class="game-image monopoly-thumbnail" role="img" aria-label="Sanskrit Monopoly">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="monopolyTitle">Sanskrit Monopoly</h3>
+        <div class="meta">
+          <span class="pill pink-pill" data-i18n="multiplayerTag">Multiplayer</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="monopolyDesc">Buy, trade and learn Sanskrit properties with friends online!</p>
+          <a href="https://sanskrit-monopoly.vercel.app/login" target="_blank" rel="noopener noreferrer" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
 
     <article class="game-card" data-category="puzzle" data-title="classic 15 puzzle fifteen sliding numbers">
       <div class="game-image orange">
@@ -1498,6 +1705,25 @@
         </div>
       </div>
     </article>
+
+    <article class="game-card" data-category="puzzle" data-title="picture puzzle jigsaw gurukula sanskrit drag pieces">
+      <div class="game-image picture-puzzle-thumbnail" role="img" aria-label="Gurukula picture puzzle">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="picturePuzzleTitle">Picture Puzzle</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="picturePuzzleDesc">Drag and swap pieces to rebuild a Sanskrit learning scene.</p>
+          <a href="Games/019-cs(Picture Puzzel)/index.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
     <div class="empty-state" data-i18n="emptyState">No games available in this category yet.</div>
 
   </main>
@@ -1505,8 +1731,6 @@
   <script type="module">
     import {
       auth,
-      provider,
-      signInWithPopup,
       signOut,
       onAuthStateChanged
     } from "./firebase-config.js";
@@ -1592,8 +1816,10 @@
         slideWatch: "Tell time in Sanskrit<span>Analog Watch</span>",
         slideNumerale: "Guess the Devanagari number<span>Numerale</span>",
         slideSudoku: "Fill the Sanskrit number grid<span>Sudoku</span>",
+        slidePicturePuzzle: "Rebuild the gurukula scene<span>Picture Puzzle</span>",
 
         catAll: "▦ ALL",
+        catMultiplayer: "👥 Multiplayer",
         catWord: "शब्दः Word Games",
         catBoard: "🎲 Board Games",
         catPuzzle: "🧩 Puzzles",
@@ -1601,6 +1827,16 @@
         catMore: "⋯ More",
 
         newTag: "NEW",
+        pictionaryTitle: "Sanskrit Pictionary",
+        pictionaryDesc: "Draw and guess Sanskrit words with friends online in real-time!",
+        slidePictionary: "Draw and guess Sanskrit words live<span>Sanskrit Pictionary</span>",
+        wordComplexTitle: "Word Complex",
+        wordComplexDesc: "Learn, play and explore Sanskrit words in a fun multiplayer challenge!",
+        slideWordComplex: "Learn, play and explore Sanskrit words<span>Word Complex</span>",
+        monopolyTitle: "Sanskrit Monopoly",
+        monopolyDesc: "Buy, trade and learn Sanskrit properties with friends online!",
+        slideMonopoly: "Buy, trade and learn Sanskrit properties<span>Sanskrit Monopoly</span>",
+        multiplayerTag: "Multiplayer",
         puzzleTitle: "Classic 15 Puzzle",
         puzzleTag: "Puzzle",
         wordTag: "Word Game",
@@ -1635,6 +1871,8 @@
         numeraleDesc: "Guess the 5-digit number in Devanagari script!",
         sudokuTitle: "Sudoku",
         sudokuDesc: "Fill the grid using English or Sanskrit symbols.",
+        picturePuzzleTitle: "Picture Puzzle",
+        picturePuzzleDesc: "Drag and swap pieces to rebuild a Sanskrit learning scene.",
 
         playNow: "Play Now ▶",
         emptyState: "No games found.",
@@ -1674,8 +1912,10 @@
         slideWatch: "संस्कृते समयं वद<span>घटिकायन्त्रम्</span>",
         slideNumerale: "देवनागरीसंख्यां अनुमानय<span>न्यूमरेल</span>",
         slideSudoku: "संस्कृतसंख्याजालकं पूरय<span>सुडोकू</span>",
+        slidePicturePuzzle: "गुरुकुलस्य चित्रं पुनर्निर्मीयताम्<span>चित्र-समस्या</span>",
 
         catAll: "▦ सर्वम्",
+        catMultiplayer: "👥 बहुक्रीडकः",
         catWord: "शब्दक्रीडाः",
         catBoard: "🎲 फलकक्रीडाः",
         catPuzzle: "🧩 प्रहेलिकाः",
@@ -1683,6 +1923,16 @@
         catMore: "⋯ अधिकम्",
 
         newTag: "नूतनम्",
+        pictionaryTitle: "संस्कृत चित्रक्रीडा",
+        pictionaryDesc: "मित्रैः सह चित्राणि आलिख्य संस्कृतशब्दान् अनुमानयतु!",
+        slidePictionary: "चित्रं लिखित्वा संस्कृतशब्दान् अनुमानयतु<span>संस्कृत चित्रक्रीडा</span>",
+        wordComplexTitle: "शब्दसमुच्चयः",
+        wordComplexDesc: "बहुक्रीडके स्पर्धायां संस्कृतशब्दान् शिक्षस्व क्रीडस्व अन्वेषयस्व!",
+        slideWordComplex: "संस्कृतशब्दान् शिक्षस्व क्रीडस्व अन्वेषयस्व<span>शब्दसमुच्चयः</span>",
+        monopolyTitle: "संस्कृत एकाधिपत्यम्",
+        monopolyDesc: "मित्रैः सह संस्कृतसम्पत्तीन् क्रीणीय विक्रीणीय शिक्षस्व!",
+        slideMonopoly: "संस्कृतसम्पत्तीन् क्रीणीय विक्रीणीय शिक्षस्व<span>संस्कृत एकाधिपत्यम्</span>",
+        multiplayerTag: "बहुक्रीडकः",
         puzzleTitle: "१५ प्रहेलिका",
         puzzleTag: "प्रहेलिका",
         wordTag: "शब्दक्रीडा",
@@ -1717,6 +1967,8 @@
         numeraleDesc: "देवनागरीलिप्या पञ्चाङ्कसंख्यां अनुमानयतु!",
         sudokuTitle: "सुडोकू",
         sudokuDesc: "आङ्ग्ल-संस्कृतचिह्नैः जालकं पूरय।",
+        picturePuzzleTitle: "चित्र-समस्या",
+        picturePuzzleDesc: "खण्डान् कर्षयित्वा संस्कृताध्ययनचित्रं पुनर्निर्मीयताम्।",
 
         playNow: "क्रीडतु ▶",
         emptyState: "क्रीडा न प्राप्ता।",
@@ -1828,13 +2080,8 @@
       emptyState.style.display = visibleCount === 0 ? "block" : "none";
     }
 
-    loginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Login error:", error);
-        alert(translations[currentLanguage].loginFailed);
-      }
+    loginBtn.addEventListener("click", () => {
+      window.location.href = "./login.html";
     });
 
     logoutBtn.addEventListener("click", async () => {
@@ -1925,14 +2172,33 @@
     });
 
     howItWorksBtn.addEventListener("click", () => {
-      alert(translations[currentLanguage].howText);
+      showModal(translations[currentLanguage].howText);
     });
 
     document.querySelectorAll(".coming-soon-btn").forEach(button => {
       button.addEventListener("click", () => {
-        alert(translations[currentLanguage].comingSoon);
+        showModal(translations[currentLanguage].comingSoon);
       });
     });
+
+    function showModal(message) {
+      const overlay = document.getElementById("zatamOverlay");
+      const msg = document.getElementById("zatamModalMsg");
+      const okBtn = document.getElementById("zatamModalOk");
+      msg.textContent = message;
+      overlay.classList.add("visible");
+      okBtn.focus();
+      function close() {
+        overlay.classList.remove("visible");
+        okBtn.removeEventListener("click", close);
+        overlay.removeEventListener("click", onOverlayClick);
+      }
+      function onOverlayClick(e) {
+        if (e.target === overlay) close();
+      }
+      okBtn.addEventListener("click", close);
+      overlay.addEventListener("click", onOverlayClick);
+    }
 
     showSlide(0);
     updateSlideshowToggle();

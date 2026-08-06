@@ -243,8 +243,10 @@ import {
     signInWithPopup,
     signOut,
     onAuthStateChanged,
-    collection,
-    addDoc,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
     serverTimestamp
 } from "../../firebase-config.js";
 
@@ -260,7 +262,7 @@ let PAIRS = ROWS * COLS / 2;
 let selectedImages = ilist[setIndex].slice(0, PAIRS);
 let selectedWords = wlist[setIndex].slice(0, PAIRS);
 
-new Frame(FIT, 1024, 768, light, dark, ready);
+new Frame(FIT, 1024, 768, "#fffaf2", dark, ready);
 
 function ready() {
     Ticker.always();
@@ -695,35 +697,69 @@ function ready() {
         const user = auth.currentUser;
 
         if (!user) {
-            alert("Please login before saving your score.");
+            console.log("User is not logged in. Score was not saved.");
             return;
         }
 
         scoreUploaded = true;
 
-        const scoreData = {
-            userId: user.uid,
-            playerName: user.displayName || "Player",
-            email: user.email || "",
-            photoURL: user.photoURL || "",
+        const gameId = "memoryc";
+        const gameName = "Memory Connect";
+        const today = getTodayDateString();
 
-            gameId: "memoryc",
-            gameName: "Memory Connect",
+        // One document per user, game, and date
+        const recordId = `${user.uid}_${gameId}_${today}`;
 
-            score: finalScore,
-            //wrongMoves: wrongMoves,
-            //matches: matchesDone,
-            //totalPairs: PAIRS,
-            //time: timer.text,
-            //difficulty: PAIRS === 4 ? "Easy" : PAIRS === 6 ? "Medium" : "Hard",
-
-            createdAt: serverTimestamp(),
-            scoreDate: getTodayDateString()
-        };
+        const scoreRef = doc(
+            db,
+            "leaderboard-zatamgame",
+            recordId
+        );
 
         try {
-            await addDoc(collection(db, "leaderboard"), scoreData);
-            console.log("Memory Connect score uploaded successfully:", scoreData);
+            const existingSnapshot = await getDoc(scoreRef);
+
+            if (!existingSnapshot.exists()) {
+                // First score for this game today
+                await setDoc(scoreRef, {
+                    userId: user.uid,
+                    playerName: user.displayName || "Player",
+                    email: user.email || "",
+                    photoURL: user.photoURL || "",
+                    gameId: gameId,
+                    gameName: gameName,
+                    score: finalScore,
+                    scoreDate: today,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+
+                console.log("Daily Memory Connect score created:", finalScore);
+                return;
+            }
+
+            const existingData = existingSnapshot.data();
+            const oldScore = Number(existingData.score) || 0;
+
+            if (finalScore > oldScore) {
+                // Replace today's score only when the new score is higher
+                await updateDoc(scoreRef, {
+                    playerName: user.displayName || "Player",
+                    email: user.email || "",
+                    photoURL: user.photoURL || "",
+                    gameName: gameName,
+                    score: finalScore,
+                    updatedAt: serverTimestamp()
+                });
+
+                console.log(
+                    `Daily Memory Connect score improved: ${oldScore} → ${finalScore}`
+                );
+            } else {
+                console.log(
+                    `Existing daily score kept: ${oldScore}. New score: ${finalScore}`
+                );
+            }
         } catch (error) {
             scoreUploaded = false;
             console.error("Memory Connect score upload failed:", error);

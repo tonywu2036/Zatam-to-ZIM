@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="sa">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>पाशः — Maze</title>
+    <title>Paasha Maze</title>
 
     <link rel="shortcut icon" href="../RockPaperScissors/zipaka.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,8 +62,47 @@
       .main-shell{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh}
       .page-header{
         position:relative;display:flex;align-items:center;justify-content:center;
-        padding:24px 96px 26px 72px; /* leave room for profile icon */
+        padding:24px 96px 26px 72px; /* leave room for profile + lang */
       }
+      .lang-btn{
+        position:absolute;
+        top:12px;
+        left:16px;
+        height:40px;
+        border-radius:12px;
+        padding:0 14px;
+        border:1.5px solid rgba(26,92,74,.22);
+        background:#ffffff;
+        color:var(--title-teal);
+        font-size:14px;
+        font-weight:700;
+        font-family:inherit;
+        cursor:pointer;
+        box-shadow:var(--shadow);
+        transition:background .15s ease, transform .12s ease, border-color .15s ease;
+      }
+      .lang-btn:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35);transform:translateY(-1px)}
+      .lang-btn:active{transform:translateY(0) scale(.98)}
+      .sound-btn{
+        position:absolute;
+        top:12px;
+        right:68px;
+        height:40px;
+        border-radius:12px;
+        padding:0 14px;
+        border:1.5px solid rgba(26,92,74,.22);
+        background:#ffffff;
+        color:var(--title-teal);
+        font-size:14px;
+        font-weight:700;
+        font-family:inherit;
+        cursor:pointer;
+        box-shadow:var(--shadow);
+        transition:background .15s ease, transform .12s ease, border-color .15s ease;
+      }
+      .sound-btn:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35);transform:translateY(-1px)}
+      .sound-btn:active{transform:translateY(0) scale(.98)}
+      .sound-btn.is-off{opacity:.82}
       .page-title{
         font-family:Asap,system-ui,sans-serif;
         font-size:clamp(22px,4vw,34px);
@@ -195,8 +234,8 @@
         height:100% !important;
       }
 
-      .mobile-controls{
-        display:none;
+      .maze-controls{
+        display:block;
         margin-top:14px;
         padding-top:4px;
       }
@@ -205,13 +244,13 @@
         grid-template-columns:repeat(3, minmax(0, 1fr));
         grid-template-rows:repeat(2, minmax(0, 1fr));
         gap:10px;
-        width:min(100%, 240px);
+        width:min(100%, 280px);
         margin:0 auto;
       }
       .dpad-btn{
         width:100%;
         aspect-ratio:1;
-        min-height:58px;
+        min-height:64px;
         border:1px solid rgba(26,92,74,.22);
         border-radius:16px;
         background:#ffffff;
@@ -219,14 +258,24 @@
         box-shadow:var(--shadow);
         cursor:pointer;
         display:flex;
+        flex-direction:column;
         align-items:center;
         justify-content:center;
+        gap:4px;
         touch-action:manipulation;
         user-select:none;
         -webkit-tap-highlight-color:transparent;
         transition:background .12s ease, transform .1s ease, border-color .12s ease;
       }
-      .dpad-btn svg{width:24px;height:24px;display:block}
+      .dpad-btn svg{width:22px;height:22px;display:block;flex-shrink:0}
+      .dpad-label{
+        font-size:11px;
+        font-weight:800;
+        line-height:1;
+        color:var(--green-dark);
+        letter-spacing:.02em;
+      }
+      .dpad-btn:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35)}
       .dpad-btn:active,
       .dpad-btn.pressed{
         background:#e8f5f0;
@@ -237,7 +286,7 @@
       .dpad-left{grid-column:1;grid-row:2}
       .dpad-down{grid-column:2;grid-row:2}
       .dpad-right{grid-column:3;grid-row:2}
-      .mobile-controls-label{
+      .maze-controls-label{
         text-align:center;
         font-size:12px;
         font-weight:700;
@@ -284,7 +333,9 @@
         .play-panel{order:1;min-height:auto;padding:12px}
         .rules-panel{order:2;padding:14px}
         #mazeHolder{min-height:140px}
-        .page-header{padding:14px 72px 16px 12px}
+        .page-header{padding:14px 72px 16px 56px}
+        .lang-btn{top:10px;left:10px;height:36px;padding:0 10px;font-size:12px}
+        .sound-btn{top:10px;right:58px;height:36px;padding:0 10px;font-size:12px}
         .page-title{font-size:clamp(20px, 6vw, 28px)}
         .profile-icon{top:10px;right:10px}
         .hud{
@@ -300,7 +351,6 @@
         }
         .hud-label{font-size:12px}
         .character-grid{grid-template-columns:repeat(3, minmax(0, 1fr))}
-        .mobile-controls{display:block}
         .zim-footer{
           left:56px;
           padding:12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
@@ -406,26 +456,28 @@
 
       <div class="main-shell">
         <header class="page-header">
-          <div class="page-title">पाशः <span style="font-weight:600;color:#2c3e5a">Maze</span></div>
+          <button class="lang-btn" id="langBtn" type="button" data-i18n="langButton">🌐 EN / SA</button>
+          <div class="page-title" data-i18n="pageTitle">Paasha Maze</div>
+          <button class="sound-btn" id="soundBtn" type="button" aria-label="Toggle movement sounds" aria-pressed="true">🔊 Sound On</button>
           <div class="profile-icon">
-            <button class="profile-icon-btn" id="profileBtn" aria-label="Profile"></button>
+            <button class="profile-icon-btn" id="profileBtn" data-i18n-aria="profileAria" aria-label="Profile"></button>
           </div>
         </header>
 
         <main class="zim-body">
           <section class="rules-panel">
-            <div class="rules-title">How to play</div>
-            <div class="rules-text">
-              Navigate the maze, collect the key, then unlock the gate. Use arrow keys on desktop or the on-screen arrows on mobile.
+            <div class="rules-title" data-i18n="rulesTitle">How to play</div>
+            <div class="rules-text" data-i18n="rulesText">
+              Navigate the maze, collect the key, then unlock the gate. Use arrow keys or the on-screen direction buttons.
             </div>
             <ul class="rules-list">
-              <li>Find the key hidden somewhere in the maze.</li>
-              <li>The gate stays locked until you have the key.</li>
-              <li>Fewer moves gives a higher score.</li>
+              <li data-i18n="rule1">Find the key hidden somewhere in the maze.</li>
+              <li data-i18n="rule2">The gate stays locked until you have the key.</li>
+              <li data-i18n="rule3">Fewer moves gives a higher score.</li>
             </ul>
 
             <div class="character-section">
-              <div class="character-title">Choose your character</div>
+              <div class="character-title" data-i18n="characterTitle">Choose your character</div>
               <div class="character-grid" id="characterGrid"></div>
             </div>
 
@@ -433,46 +485,50 @@
               <div class="profile-row">
                 <div class="avatar" id="avatar"></div>
                 <div style="min-width:0">
-                  <div class="profile-name" id="profileName">Not logged in</div>
-                  <div class="profile-sub" id="profileEmail">Login from Home to save score.</div>
+                  <div class="profile-name" id="profileName" data-i18n="notLoggedIn">Not logged in</div>
+                  <div class="profile-sub" id="profileEmail" data-i18n="loginHint">Login from Home to save score.</div>
                 </div>
               </div>
-              <div class="save-status" id="saveStatus">Score not saved yet.</div>
+              <div class="save-status" id="saveStatus" data-i18n="scoreNotSaved">Score not saved yet.</div>
             </div>
           </section>
 
           <section class="play-panel">
             <div class="hud">
-              <div class="hud-pill"><span class="hud-label">Character</span><span id="charVal">🧑‍🎓 Vidya</span></div>
-              <div class="hud-pill"><span class="hud-label">Key</span><span id="keyVal">🔍 Find it</span></div>
-              <div class="hud-pill"><span class="hud-label">Moves</span><span id="movesVal">0</span></div>
-              <div class="hud-pill"><span class="hud-label">Time</span><span id="timeVal">0</span></div>
-              <div class="hud-pill"><span class="hud-label">Score</span><span id="scoreVal">0</span></div>
+              <div class="hud-pill"><span class="hud-label" data-i18n="hudCharacter">Character</span><span id="charVal">🧑‍🎓 Vidya</span></div>
+              <div class="hud-pill"><span class="hud-label" data-i18n="hudKey">Key</span><span id="keyVal">🔍 Find it</span></div>
+              <div class="hud-pill"><span class="hud-label" data-i18n="hudMoves">Moves</span><span id="movesVal">0</span></div>
+              <div class="hud-pill"><span class="hud-label" data-i18n="hudTime">Time</span><span id="timeVal">0</span></div>
+              <div class="hud-pill"><span class="hud-label" data-i18n="hudScore">Score</span><span id="scoreVal">0</span></div>
             </div>
             <div class="game-message" id="gameMessage">First find the key 🔑</div>
             <div id="mazeHolder"></div>
-            <div class="mobile-controls" id="mobileControls" aria-label="Movement controls">
-              <div class="mobile-controls-label">Tap arrows to move</div>
+            <div class="maze-controls" id="mazeControls" data-i18n-aria="controlsAria" aria-label="Movement controls">
+              <div class="maze-controls-label" data-i18n="controlsLabel">Up · Down · Left · Right</div>
               <div class="dpad">
-                <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">
+                <button type="button" class="dpad-btn dpad-up" data-dir="up" data-i18n-aria="moveUpAria" aria-label="Move up">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M12 5l-7 7h4v7h6v-7h4l-7-7z" fill="currentColor"/>
                   </svg>
+                  <span class="dpad-label" data-i18n="dirUp">Up</span>
                 </button>
-                <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="Move left">
+                <button type="button" class="dpad-btn dpad-left" data-dir="left" data-i18n-aria="moveLeftAria" aria-label="Move left">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M5 12l7-7v4h7v6h-7v4l-7-7z" fill="currentColor"/>
                   </svg>
+                  <span class="dpad-label" data-i18n="dirLeft">Left</span>
                 </button>
-                <button type="button" class="dpad-btn dpad-down" data-dir="down" aria-label="Move down">
+                <button type="button" class="dpad-btn dpad-down" data-dir="down" data-i18n-aria="moveDownAria" aria-label="Move down">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M12 19l7-7h-4V5h-6v7H5l7 7z" fill="currentColor"/>
                   </svg>
+                  <span class="dpad-label" data-i18n="dirDown">Down</span>
                 </button>
-                <button type="button" class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">
+                <button type="button" class="dpad-btn dpad-right" data-dir="right" data-i18n-aria="moveRightAria" aria-label="Move right">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M19 12l-7 7v-4H5v-6h7V5l7 7z" fill="currentColor"/>
                   </svg>
+                  <span class="dpad-label" data-i18n="dirRight">Right</span>
                 </button>
               </div>
             </div>
@@ -480,7 +536,7 @@
         </main>
 
         <footer class="zim-footer">
-          <button class="reset-btn" id="resetBtn">Reset</button>
+          <button class="reset-btn" id="resetBtn" data-i18n="reset">Reset</button>
         </footer>
       </div>
     </div>
@@ -489,20 +545,20 @@
     <div class="win-backdrop" id="winBackdrop" role="dialog" aria-modal="true" aria-labelledby="winTitle">
       <div class="win-card">
         <div class="win-header">
-          <div class="win-title" id="winTitle">MAZE COMPLETE</div>
-          <div class="win-sub" id="winSub">✅ Uttamam!</div>
-          <button class="win-close" id="winClose" aria-label="Close">✕</button>
+          <div class="win-title" id="winTitle" data-i18n="winTitle">MAZE COMPLETE</div>
+          <div class="win-sub" id="winSub" data-i18n="winSub">✅ Excellent!</div>
+          <button class="win-close" id="winClose" data-i18n-aria="closeAria" aria-label="Close">✕</button>
         </div>
         <div class="win-body">
           <div class="stats-grid">
-            <div class="stat"><div class="stat-k">MOVES</div><div class="stat-v" id="winMoves">0</div></div>
-            <div class="stat"><div class="stat-k">TIME</div><div class="stat-v" id="winTime">0s</div></div>
-            <div class="stat"><div class="stat-k">SCORE</div><div class="stat-v" id="winScore">0 ⭐</div></div>
+            <div class="stat"><div class="stat-k" data-i18n="statMoves">MOVES</div><div class="stat-v" id="winMoves">0</div></div>
+            <div class="stat"><div class="stat-k" data-i18n="statTime">TIME</div><div class="stat-v" id="winTime">0s</div></div>
+            <div class="stat"><div class="stat-k" data-i18n="statScore">SCORE</div><div class="stat-v" id="winScore">0 ⭐</div></div>
           </div>
-          <div class="win-tip">Try again with fewer moves to score higher.</div>
+          <div class="win-tip" data-i18n="winTip">Try again with fewer moves to score higher.</div>
           <div class="win-actions">
-            <button class="btn btn-secondary" id="winHome">Home</button>
-            <button class="btn btn-primary" id="winAgain">Play Again</button>
+            <button class="btn btn-secondary" id="winHome" data-i18n="winHome">Home</button>
+            <button class="btn btn-primary" id="winAgain" data-i18n="winAgain">Play Again</button>
           </div>
         </div>
       </div>
@@ -525,12 +581,225 @@
         auth,
         onAuthStateChanged,
         db,
-        collection,
-        addDoc,
-        serverTimestamp
+        serverTimestamp,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc
       } from "../../firebase-config.js";
 
+      const LEADERBOARD_COLLECTION = "leaderboard-zatamgame";
+      const MAZE_GAME_ID = "maze";
+      const MAZE_GAME_NAME = "Paasha Maze";
+
       const html = htm.bind(React.createElement);
+
+      const MAZE_LANG_KEY = "zatamLanguage";
+      const MAZE_SOUND_KEY = "mazeSoundOn";
+
+      const MOVE_SOUND_FILES = {
+        up: "assets/up.wav",
+        down: "assets/down.wav",
+        left: "assets/left.wav",
+        right: "assets/right.wav"
+      };
+
+      function loadSoundEnabled() {
+        try {
+          const saved = localStorage.getItem(MAZE_SOUND_KEY);
+          return saved === null ? true : saved === "true";
+        } catch {
+          return true;
+        }
+      }
+
+      function createMoveSoundPlayer() {
+        const clips = {};
+        let unlocked = false;
+
+        Object.entries(MOVE_SOUND_FILES).forEach(([dir, src]) => {
+          const audio = new Audio(src);
+          audio.preload = "auto";
+          clips[dir] = audio;
+        });
+
+        return {
+          unlock() {
+            if (unlocked) return;
+            unlocked = true;
+            const audio = clips.up;
+            if (!audio) return;
+            const prevVolume = audio.volume;
+            audio.volume = 0.001;
+            audio.play().then(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              audio.volume = prevVolume;
+            }).catch(() => {
+              audio.volume = prevVolume;
+            });
+          },
+          play(dir, enabled) {
+            if (!enabled) return;
+            const audio = clips[dir];
+            if (!audio) return;
+            try {
+              audio.currentTime = 0;
+              audio.play().catch(() => {});
+            } catch {
+              // ignore playback errors
+            }
+          }
+        };
+      }
+
+      const moveSoundPlayer = createMoveSoundPlayer();
+
+      const MAZE_I18N = {
+        en: {
+          docTitle: "Paasha Maze",
+          langButton: "🌐 EN / SA",
+          pageTitle: "Paasha Maze",
+          profileAria: "Profile",
+          rulesTitle: "How to play",
+          rulesText: "Navigate the maze, collect the key, then unlock the gate. Use arrow keys or the on-screen direction buttons.",
+          rule1: "Find the key hidden somewhere in the maze.",
+          rule2: "The gate stays locked until you have the key.",
+          rule3: "Fewer moves gives a higher score.",
+          characterTitle: "Choose your character",
+          notLoggedIn: "Not logged in",
+          loginHint: "Login from Home to save score.",
+          scoreNotSaved: "Score not saved yet.",
+          hudCharacter: "Character",
+          hudKey: "Key",
+          hudMoves: "Moves",
+          hudTime: "Time",
+          hudScore: "Score",
+          keyFind: "🔍 Find it",
+          keyGot: "🔑 Got it!",
+          controlsAria: "Movement controls",
+          controlsLabel: "Up · Down · Left · Right",
+          dirUp: "Up",
+          dirDown: "Down",
+          dirLeft: "Left",
+          dirRight: "Right",
+          moveUpAria: "Move up",
+          moveDownAria: "Move down",
+          moveLeftAria: "Move left",
+          moveRightAria: "Move right",
+          soundOn: "🔊 Sound On",
+          soundOff: "🔇 Sound Off",
+          soundAria: "Toggle movement sounds",
+          reset: "Reset",
+          winTitle: "MAZE COMPLETE",
+          winSub: "✅ Excellent!",
+          closeAria: "Close",
+          statMoves: "MOVES",
+          statTime: "TIME",
+          statScore: "SCORE",
+          winTip: "Try again with fewer moves to score higher.",
+          winHome: "Home",
+          winAgain: "Play Again",
+          msgFindKey: "First find the key 🔑",
+          msgNeedKey: "You need a key to unlock the door!",
+          msgFoundKey: "You found the key! Now unlock the gate.",
+          player: "Player",
+          loginAlert: "Please login before saving your score.",
+          savedScore: "Saved: {score} ⭐",
+          saveFailed: "Save failed: {error}",
+          char_vidya: "Vidya",
+          char_simha: "Simha",
+          char_gaja: "Gaja",
+          char_mayura: "Mayura",
+          char_vanara: "Vanara",
+          char_naga: "Naga"
+        },
+        sa: {
+          docTitle: "पाशः — भूलभुलैया",
+          langButton: "🌐 EN / SA",
+          pageTitle: "पाशः — भूलभुलैया",
+          profileAria: "प्रोफाइल",
+          rulesTitle: "कथं क्रीडनीयम्",
+          rulesText: "भूलभुलैयां चरन्तु, कुञ्चिकां गृह्णन्तु, ततः द्वारं उद्घाटयन्तु। कीलपटलैः वा दिशानियन्त्रणबट्टनैः वा चलन्तु।",
+          rule1: "भूलभुलैयायां कतिपयस्थाने गुप्तां कुञ्चिकां अन्वेषयन्तु।",
+          rule2: "कुञ्चिकायां विना द्वारं तालाबद्धं भवति।",
+          rule3: "न्यूनचालनैः उच्चां स्कोरं प्राप्नुवन्ति।",
+          characterTitle: "पात्रं चिनुत",
+          notLoggedIn: "प्रवेशः नास्ति",
+          loginHint: "स्कोरं रक्षितुं गृहपृष्ठात् प्रविशन्तु।",
+          scoreNotSaved: "स्कोरः अद्यापि न रक्षितः।",
+          hudCharacter: "पात्रम्",
+          hudKey: "कुञ्चिका",
+          hudMoves: "चालनानि",
+          hudTime: "समयः",
+          hudScore: "स्कोरः",
+          keyFind: "🔍 अन्वेषय",
+          keyGot: "🔑 प्राप्ता!",
+          controlsAria: "चालननियन्त्रणानि",
+          controlsLabel: "ऊर्ध्वम् · अधः · वामम् · दक्षिणम्",
+          dirUp: "ऊर्ध्वम्",
+          dirDown: "अधः",
+          dirLeft: "वामम्",
+          dirRight: "दक्षिणम्",
+          moveUpAria: "ऊर्ध्वं चल",
+          moveDownAria: "अधः चल",
+          moveLeftAria: "वामं चल",
+          moveRightAria: "दक्षिणं चल",
+          soundOn: "🔊 ध्वनिः चालु",
+          soundOff: "🔇 ध्वनिः बन्द",
+          soundAria: "चालनध्वनिं परिवर्तय",
+          reset: "पुनः आरभ्यताम्",
+          winTitle: "भूलभुलैया समाप्ता",
+          winSub: "✅ उत्तमम्!",
+          closeAria: "पिदधातु",
+          statMoves: "चालनानि",
+          statTime: "समयः",
+          statScore: "स्कोरः",
+          winTip: "न्यूनचालनैः पुनः प्रयत्नं कुरुत।",
+          winHome: "गृहम्",
+          winAgain: "पुनः क्रीडतु",
+          msgFindKey: "प्रथमं कुञ्चिकाम् अन्वेषय 🔑",
+          msgNeedKey: "द्वारं उद्घाटयितुं कुञ्चिका आवश्यकी!",
+          msgFoundKey: "कुञ्चिका प्राप्ता! अधुना द्वारं उद्घाटयन्तु।",
+          player: "क्रीडकः",
+          loginAlert: "स्कोरं रक्षितुं प्रथमं प्रविशन्तु।",
+          savedScore: "रक्षितम्: {score} ⭐",
+          saveFailed: "रक्षणं विफलम्: {error}",
+          char_vidya: "विद्या",
+          char_simha: "सिंह",
+          char_gaja: "गज",
+          char_mayura: "मयूर",
+          char_vanara: "वानर",
+          char_naga: "नाग"
+        }
+      };
+
+      function mazeT(lang, key, vars = {}) {
+        let text = MAZE_I18N[lang]?.[key] ?? MAZE_I18N.en[key] ?? key;
+        Object.entries(vars).forEach(([k, v]) => {
+          text = text.replaceAll(`{${k}}`, String(v));
+        });
+        return text;
+      }
+
+      function applyMazeLanguage(lang) {
+        document.documentElement.lang = lang === "sa" ? "sa" : "en";
+        document.title = mazeT(lang, "docTitle");
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          if (key) el.textContent = mazeT(lang, key);
+        });
+
+        document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+          const key = el.getAttribute("data-i18n-aria");
+          if (key) el.setAttribute("aria-label", mazeT(lang, key));
+        });
+      }
+
+      function getCharacterName(lang, charId) {
+        return mazeT(lang, `char_${charId}`);
+      }
 
       function todayString() {
         return new Date().toISOString().split("T")[0];
@@ -613,10 +882,7 @@
         }
       }
 
-      function drawCellEmoji(stage, ox, oy, cellSize, cellX, cellY, emoji, sizeFactor = 0.5) {
-        const cx = ox + cellX * cellSize + cellSize / 2;
-        const cy = oy + cellY * cellSize + cellSize / 2;
-        const fontSize = Math.max(20, Math.floor(cellSize * sizeFactor));
+      function drawEmojiAt(stage, x, y, emoji, fontSize) {
         const TextCtor = window.createjs?.Text || zim.Text;
         if (TextCtor) {
           const emojiText = new TextCtor(
@@ -626,8 +892,8 @@
           );
           emojiText.textAlign = "center";
           emojiText.textBaseline = "middle";
-          emojiText.x = cx;
-          emojiText.y = cy;
+          emojiText.x = x;
+          emojiText.y = y;
           stage.addChild(emojiText);
           return;
         }
@@ -638,12 +904,33 @@
           align: "center",
           valign: "center"
         })
-          .pos(cx, cy, "CENTER", "CENTER")
+          .pos(x, y, "CENTER", "CENTER")
           .addTo(stage);
       }
 
-      function drawPlayerCharacter(stage, ox, oy, cellSize, p, char) {
+      function drawCellEmoji(stage, ox, oy, cellSize, cellX, cellY, emoji, sizeFactor = 0.5) {
+        const cx = ox + cellX * cellSize + cellSize / 2;
+        const cy = oy + cellY * cellSize + cellSize / 2;
+        const fontSize = Math.max(20, Math.floor(cellSize * sizeFactor));
+        drawEmojiAt(stage, cx, cy, emoji, fontSize);
+      }
+
+      function drawPlayerCharacter(stage, ox, oy, cellSize, p, char, carryingKey = false) {
+        const cx = ox + p.x * cellSize + cellSize / 2;
+        const cy = oy + p.y * cellSize + cellSize / 2;
+
         drawCellEmoji(stage, ox, oy, cellSize, p.x, p.y, char.emoji, 0.55);
+
+        if (carryingKey) {
+          const keySize = Math.max(14, Math.floor(cellSize * 0.3));
+          drawEmojiAt(
+            stage,
+            cx + cellSize * 0.24,
+            cy - cellSize * 0.26,
+            "🔑",
+            keySize
+          );
+        }
       }
 
       function bfsDistances(maze, cols, rows, start) {
@@ -760,13 +1047,16 @@
         const [scoreUploaded, setScoreUploaded] = useState(false);
         const [selectedCharacter, setSelectedCharacter] = useState(() => loadSavedCharacter());
         const [hasKey, setHasKey] = useState(false);
-        const [gameMessage, setGameMessage] = useState("First find the key 🔑");
+        const [messageKey, setMessageKey] = useState("msgFindKey");
+        const [lang, setLang] = useState(() => localStorage.getItem(MAZE_LANG_KEY) || "en");
+        const [soundOn, setSoundOn] = useState(() => loadSoundEnabled());
 
         const timerRef = useRef(null);
         const frameRef = useRef(null);
         const stageRef = useRef(null);
         const selectedCharacterRef = useRef(selectedCharacter);
         const hasKeyRef = useRef(false);
+        const soundOnRef = useRef(soundOn);
 
         const config = useMemo(() => {
           // Similar difficulty feel to other games: responsive to screen size.
@@ -810,20 +1100,73 @@
         }, []);
 
         useEffect(() => {
+          soundOnRef.current = soundOn;
+          const btn = document.getElementById("soundBtn");
+          if (!btn) return;
+          btn.textContent = mazeT(lang, soundOn ? "soundOn" : "soundOff");
+          btn.setAttribute("aria-label", mazeT(lang, "soundAria"));
+          btn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+          btn.classList.toggle("is-off", !soundOn);
+        }, [soundOn, lang]);
+
+        useEffect(() => {
+          const btn = document.getElementById("soundBtn");
+          if (!btn) return;
+          const onToggle = () => {
+            moveSoundPlayer.unlock();
+            setSoundOn((prev) => {
+              const next = !prev;
+              try {
+                localStorage.setItem(MAZE_SOUND_KEY, String(next));
+              } catch {
+                // ignore storage errors
+              }
+              return next;
+            });
+          };
+          btn.addEventListener("click", onToggle);
+          return () => btn.removeEventListener("click", onToggle);
+        }, []);
+
+        useEffect(() => {
+          applyMazeLanguage(lang);
+        }, [lang]);
+
+        useEffect(() => {
+          const btn = document.getElementById("langBtn");
+          if (!btn) return;
+          const onToggle = () => {
+            setLang((prev) => {
+              const next = prev === "en" ? "sa" : "en";
+              try {
+                localStorage.setItem(MAZE_LANG_KEY, next);
+              } catch {
+                // ignore storage errors
+              }
+              return next;
+            });
+          };
+          btn.addEventListener("click", onToggle);
+          return () => btn.removeEventListener("click", onToggle);
+        }, []);
+
+        useEffect(() => {
           // HUD to DOM for the static layout
           document.getElementById("movesVal").textContent = String(moves);
           document.getElementById("timeVal").textContent = String(seconds);
           document.getElementById("scoreVal").textContent = String(score);
           const charVal = document.getElementById("charVal");
-          if (charVal) charVal.textContent = `${selectedCharacter.emoji} ${selectedCharacter.name}`;
+          if (charVal) {
+            charVal.textContent = `${selectedCharacter.emoji} ${getCharacterName(lang, selectedCharacter.id)}`;
+          }
           const keyVal = document.getElementById("keyVal");
-          if (keyVal) keyVal.textContent = hasKey ? "🔑 Got it!" : "🔍 Find it";
+          if (keyVal) keyVal.textContent = hasKey ? mazeT(lang, "keyGot") : mazeT(lang, "keyFind");
           const messageEl = document.getElementById("gameMessage");
           if (messageEl) {
-            messageEl.textContent = gameMessage;
+            messageEl.textContent = mazeT(lang, messageKey);
             messageEl.classList.toggle("has-key", hasKey);
           }
-        }, [moves, seconds, score, selectedCharacter, hasKey, gameMessage]);
+        }, [moves, seconds, score, selectedCharacter, hasKey, messageKey, lang]);
 
         useEffect(() => {
           selectedCharacterRef.current = selectedCharacter;
@@ -839,7 +1182,7 @@
             btn.type = "button";
             btn.className = `character-card${selectedCharacter.id === char.id ? " selected" : ""}`;
             btn.setAttribute("aria-pressed", selectedCharacter.id === char.id ? "true" : "false");
-            btn.innerHTML = `<span class="character-emoji">${escapeHTML(char.emoji)}</span><span class="character-name">${escapeHTML(char.name)}</span>`;
+            btn.innerHTML = `<span class="character-emoji">${escapeHTML(char.emoji)}</span><span class="character-name">${escapeHTML(getCharacterName(lang, char.id))}</span>`;
             btn.onclick = () => {
               setSelectedCharacter(char);
               try {
@@ -850,7 +1193,7 @@
             };
             grid.appendChild(btn);
           });
-        }, [selectedCharacter]);
+        }, [selectedCharacter, lang]);
 
         useEffect(() => {
           // Profile UI (static DOM)
@@ -858,43 +1201,80 @@
           const name = document.getElementById("profileName");
           const email = document.getElementById("profileEmail");
           if (!user) {
-            name.textContent = "Not logged in";
-            email.textContent = "Login from Home to save score.";
+            name.textContent = mazeT(lang, "notLoggedIn");
+            email.textContent = mazeT(lang, "loginHint");
             makeAvatar(avatar, null);
             return;
           }
-          name.textContent = user.displayName || "Player";
+          name.textContent = user.displayName || mazeT(lang, "player");
           email.textContent = user.email || "";
           makeAvatar(avatar, user);
-        }, [user]);
+        }, [user, lang]);
 
         async function uploadScore(finalScore) {
           if (scoreUploaded) return;
           if (!user) {
-            alert("Please login before saving your score.");
+            alert(mazeT(lang, "loginAlert"));
             return;
           }
+          if (!Number.isFinite(finalScore) || finalScore <= 0) return;
+
           setScoreUploaded(true);
           const saveStatus = document.getElementById("saveStatus");
-
-          const scoreData = {
-            userId: user.uid,
-            playerName: user.displayName || "Player",
-            email: user.email || "",
-            photoURL: user.photoURL || "",
-            gameId: "maze",
-            gameName: "Paasha Maze",
-            score: finalScore,
-            createdAt: serverTimestamp(),
-            scoreDate: todayString()
-          };
+          const today = todayString();
+          const recordId = `${user.uid}_${MAZE_GAME_ID}_${today}`;
+          const scoreRef = doc(db, LEADERBOARD_COLLECTION, recordId);
 
           try {
-            await addDoc(collection(db, "leaderboard"), scoreData);
-            if (saveStatus) saveStatus.textContent = `Saved: ${finalScore.toLocaleString()} ⭐`;
+            const existing = await getDoc(scoreRef);
+
+            if (!existing.exists()) {
+              await setDoc(scoreRef, {
+                userId: user.uid,
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                gameId: MAZE_GAME_ID,
+                gameName: MAZE_GAME_NAME,
+                score: finalScore,
+                scoreDate: today,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+              if (saveStatus) {
+                saveStatus.textContent = mazeT(lang, "savedScore", {
+                  score: finalScore.toLocaleString()
+                });
+              }
+              return;
+            }
+
+            const oldScore = Number(existing.data()?.score || 0);
+            if (finalScore > oldScore) {
+              await updateDoc(scoreRef, {
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                score: finalScore,
+                updatedAt: serverTimestamp()
+              });
+              if (saveStatus) {
+                saveStatus.textContent = mazeT(lang, "savedScore", {
+                  score: finalScore.toLocaleString()
+                });
+              }
+            } else if (saveStatus) {
+              saveStatus.textContent = mazeT(lang, "savedScore", {
+                score: oldScore.toLocaleString()
+              });
+            }
           } catch (err) {
             setScoreUploaded(false);
-            if (saveStatus) saveStatus.textContent = `Save failed: ${err?.code || err?.message || "unknown error"}`;
+            if (saveStatus) {
+              saveStatus.textContent = mazeT(lang, "saveFailed", {
+                error: err?.code || err?.message || "unknown error"
+              });
+            }
           }
         }
 
@@ -905,7 +1285,7 @@
           setSeconds(0);
           setHasKey(false);
           hasKeyRef.current = false;
-          setGameMessage("First find the key 🔑");
+          setMessageKey("msgFindKey");
           playerRef.current = { x: 0, y: 0 };
           const run = setupMazeRun(config.cols, config.rows);
           mazeRef.current = run.maze;
@@ -953,17 +1333,19 @@
           const g = goalRef.current;
           const key = keyRef.current;
           if (next.x === g.x && next.y === g.y && !hasKeyRef.current) {
-            setGameMessage("You need a key to unlock the door!");
+            setMessageKey("msgNeedKey");
             return;
           }
 
           playerRef.current = next;
           setMoves((m) => m + 1);
+          moveSoundPlayer.unlock();
+          moveSoundPlayer.play(dir, soundOnRef.current);
 
           if (!hasKeyRef.current && next.x === key.x && next.y === key.y) {
             hasKeyRef.current = true;
             setHasKey(true);
-            setGameMessage("You found the key! Now unlock the gate.");
+            setMessageKey("msgFoundKey");
           }
 
           draw();
@@ -1037,7 +1419,7 @@
           }
 
           const p = playerRef.current;
-          drawPlayerCharacter(stage, ox, oy, cellSize, p, selectedCharacterRef.current);
+          drawPlayerCharacter(stage, ox, oy, cellSize, p, selectedCharacterRef.current, hasKeyRef.current);
 
           stage.update();
         }
@@ -1261,6 +1643,7 @@
       document.body.appendChild(reactRootEl);
 
       const root = createRoot(reactRootEl);
+      applyMazeLanguage(localStorage.getItem(MAZE_LANG_KEY) || "en");
       root.render(html`<${MazeGame} />`);
     </script>
   </body>

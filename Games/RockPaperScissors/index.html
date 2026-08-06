@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="sa">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>शिला-पत्र-कर्तरी — Sanskrit Rock Paper Scissors</title>
+    <title>Rock Paper Scissors</title>
     <link rel="shortcut icon" href="./zipaka.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,8 +14,35 @@
       /* Pin profile icon to the very top-right and keep it clear of the heading. */
       .page-header {
         position: relative !important;
-        /* Extra right padding so the centered title can't slide under the icon. */
+        /* Extra padding for lang toggle (left) and profile icon (right). */
+        padding-left: 96px !important;
         padding-right: 96px !important;
+      }
+      .rps-lang-btn {
+        position: absolute !important;
+        top: 12px !important;
+        left: 16px !important;
+        height: 40px;
+        border-radius: 12px;
+        padding: 0 14px;
+        border: 1.5px solid rgba(26, 92, 74, 0.22);
+        background: #ffffff;
+        color: #1a5c4a;
+        font-size: 14px;
+        font-weight: 700;
+        font-family: Asap, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        transition: background 0.15s ease, transform 0.12s ease, border-color 0.15s ease;
+        z-index: 31 !important;
+      }
+      .rps-lang-btn:hover {
+        background: #f3fbf8;
+        border-color: rgba(26, 92, 74, 0.35);
+        transform: translateY(-1px);
+      }
+      .rps-lang-btn:active {
+        transform: translateY(0) scale(0.98);
       }
       .profile-icon {
         position: absolute !important;
@@ -34,6 +61,7 @@
     <a
       href="../../index.html"
       aria-label="Back to Home"
+      data-rps-back
       style="
         position: fixed;
         top: 10px;
@@ -66,19 +94,83 @@
         db,
         onAuthStateChanged,
         collection,
-        addDoc,
         getDocs,
         query,
         orderBy,
         limit,
-        serverTimestamp
+        serverTimestamp,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc
       } from "../../firebase-config.js";
+
+      const LEADERBOARD_COLLECTION = "leaderboard-zatamgame";
+      const RPS_GAME_ID = "rps";
+      const RPS_GAME_NAME = "Rock Paper Scissors";
 
       const PROFILE_SECTION_ID = "rps-profile-section";
       const PROFILE_LB_ID = "rps-profile-leaderboard";
+      const RPS_LANG_KEY = "zatamLanguage";
+
+      const RPS_I18N = {
+        en: {
+          langButton: "🌐 EN / SA",
+          backAria: "Back to Home",
+          profile: "Profile",
+          notLoggedIn: "Not logged in",
+          loginHint: "Log in from Home to track stats.",
+          loggedIn: "Logged in",
+          player: "Player",
+          scoreNotSaved: "Score not saved yet.",
+          leaderboardTitle: "Leaderboard (RPS)",
+          viewAll: "View all",
+          loading: "Loading…",
+          noScores: "No scores yet.",
+          lbFailed: "Failed to load leaderboard.",
+          loginAlert: "Please login before saving your score.",
+          uploadFailed: "Score upload failed. Please try again.",
+          savedScore: "Saved: {score} ⭐",
+          saveFailed: "Save failed: {error}"
+        },
+        sa: {
+          langButton: "🌐 EN / SA",
+          backAria: "गृहं प्रति",
+          profile: "प्रोफाइल",
+          notLoggedIn: "प्रवेशः नास्ति",
+          loginHint: "सङ्केतान् अनुसृत्य गृहपृष्ठात् प्रविशन्तु।",
+          loggedIn: "प्रविष्टः",
+          player: "क्रीडकः",
+          scoreNotSaved: "स्कोरः अद्यापि न रक्षितः।",
+          leaderboardTitle: "श्रेष्ठसूची (शिला-पत्र-कर्तरी)",
+          viewAll: "सर्वं दृश्यताम्",
+          loading: "आरोप्यते…",
+          noScores: "अद्यापि स्कोरः नास्ति।",
+          lbFailed: "श्रेष्ठसूचीं आरोपयितुं विफलम्।",
+          loginAlert: "स्कोरं रक्षितुं प्रथमं प्रविशन्तु।",
+          uploadFailed: "स्कोररक्षणं विफलम्। पुनः प्रयतन्ताम्।",
+          savedScore: "रक्षितम्: {score} ⭐",
+          saveFailed: "रक्षणं विफलम्: {error}"
+        }
+      };
+
+      function getRpsLang() {
+        return localStorage.getItem(RPS_LANG_KEY) === "sa" ? "sa" : "en";
+      }
+
+      function rpsT(key, vars = {}) {
+        const lang = getRpsLang();
+        let text = RPS_I18N[lang]?.[key] ?? RPS_I18N.en[key] ?? key;
+        Object.entries(vars).forEach(([k, v]) => {
+          text = text.replaceAll(`{${k}}`, String(v));
+        });
+        return text;
+      }
+
       let currentUser = null;
       let profileWired = false;
-      let scoreUploaded = false;
+      let lastUploadedScore = 0;
+      let uploadInFlight = null;
 
       function escapeHTML(value) {
         return String(value ?? "")
@@ -162,93 +254,137 @@
         return Math.max(100, wins * 1000);
       }
 
-      async function uploadScore(finalScore) {
-        if (scoreUploaded) return;
-
+      async function uploadScore(finalScore, { quiet = false } = {}) {
         const user = auth.currentUser;
         if (!user) {
-          alert("Please login before saving your score.");
-          return;
+          if (!quiet) alert(rpsT("loginAlert"));
+          return false;
         }
 
-        if (!Number.isFinite(finalScore) || finalScore <= 0) return;
+        if (!Number.isFinite(finalScore) || finalScore <= 0) return false;
+        if (finalScore <= lastUploadedScore) return false;
+        if (uploadInFlight) return uploadInFlight;
 
-        scoreUploaded = true;
+        const status = document.getElementById("rps-save-status");
+        const today = getTodayDateString();
+        const recordId = `${user.uid}_${RPS_GAME_ID}_${today}`;
+        const scoreRef = doc(db, LEADERBOARD_COLLECTION, recordId);
 
-        const scoreData = {
-          userId: user.uid,
-          playerName: user.displayName || "Player",
-          email: user.email || "",
-          photoURL: user.photoURL || "",
+        uploadInFlight = (async () => {
+          try {
+            const existing = await getDoc(scoreRef);
 
-          gameId: "rps",
-          gameName: "Rock Paper Scissors",
+            if (!existing.exists()) {
+              await setDoc(scoreRef, {
+                userId: user.uid,
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                gameId: RPS_GAME_ID,
+                gameName: RPS_GAME_NAME,
+                score: finalScore,
+                scoreDate: today,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+              lastUploadedScore = finalScore;
+              if (status) {
+                status.textContent = rpsT("savedScore", {
+                  score: Number(finalScore).toLocaleString()
+                });
+              }
+              return true;
+            }
 
-          score: finalScore,
-
-          createdAt: serverTimestamp(),
-          scoreDate: getTodayDateString()
-        };
-
-        try {
-          await addDoc(collection(db, "leaderboard"), scoreData);
-          console.log("RPS score uploaded successfully:", scoreData);
-          const status = document.getElementById("rps-save-status");
-          if (status) {
-            status.textContent = `Saved: ${Number(finalScore).toLocaleString()} ⭐`;
+            const oldScore = Number(existing.data()?.score || 0);
+            if (finalScore > oldScore) {
+              await updateDoc(scoreRef, {
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+                score: finalScore,
+                updatedAt: serverTimestamp()
+              });
+              lastUploadedScore = finalScore;
+              if (status) {
+                status.textContent = rpsT("savedScore", {
+                  score: Number(finalScore).toLocaleString()
+                });
+              }
+            } else {
+              lastUploadedScore = Math.max(lastUploadedScore, oldScore);
+              if (status) {
+                status.textContent = rpsT("savedScore", {
+                  score: Number(oldScore).toLocaleString()
+                });
+              }
+            }
+            return true;
+          } catch (error) {
+            console.error("RPS score upload failed:", error);
+            if (status) {
+              status.textContent = rpsT("saveFailed", {
+                error: error?.code || error?.message || "unknown error"
+              });
+            }
+            if (!quiet) alert(rpsT("uploadFailed"));
+            return false;
+          } finally {
+            uploadInFlight = null;
           }
-        } catch (error) {
-          scoreUploaded = false;
-          console.error("RPS score upload failed:", error);
-          const status = document.getElementById("rps-save-status");
-          if (status) {
-            status.textContent = `Save failed: ${error?.code || error?.message || "unknown error"}`;
-          }
-          alert("Score upload failed. Please try again.");
-        }
+        })();
+
+        return uploadInFlight;
       }
 
-      function finishSession() {
+      async function finishSession({ quiet = false } = {}) {
         const wins = getPlayerWins();
-        if (wins <= 0) return;
-        uploadScore(calculateRpsScore(wins));
+        if (wins <= 0) return false;
+        return uploadScore(calculateRpsScore(wins), { quiet });
       }
 
       function setupSessionScoreUpload() {
-        // Upload once when the player ends a session (Reset), like Memory Match finishGame().
+        // Upload best score so far when Reset is clicked.
         document.addEventListener(
           "click",
           (event) => {
             if (event.target.closest(".reset-btn")) {
-              finishSession();
+              finishSession({ quiet: true });
             }
           },
           true
         );
 
-        // Upload when leaving the game via the back link.
-        const backLink = document.querySelector('a[aria-label="Back to Home"]');
-        backLink?.addEventListener("click", () => {
-          finishSession();
+        // Upload before leaving via back link (wait so Firestore write finishes).
+        const backLink = document.querySelector("[data-rps-back]");
+        backLink?.addEventListener("click", async (event) => {
+          const wins = getPlayerWins();
+          if (wins <= 0) return;
+          event.preventDefault();
+          await finishSession({ quiet: true });
+          window.location.href = backLink.getAttribute("href") || "../../index.html";
         });
 
-        // Allow a new upload after scores are reset to 0.
+        // Upload when wins increase (daily best updates while playing).
         let lastWins = 0;
         setInterval(() => {
           const wins = getPlayerWins();
+          if (wins > lastWins && wins > 0) {
+            uploadScore(calculateRpsScore(wins), { quiet: true });
+          }
           if (lastWins > 0 && wins === 0) {
-            scoreUploaded = false;
+            lastUploadedScore = 0;
           }
           lastWins = wins;
-        }, 500);
+        }, 700);
       }
 
       async function loadRpsLeaderboard(intoEl) {
         if (!intoEl) return;
-        intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">Loading…</div>`;
+        intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">${escapeHTML(rpsT("loading"))}</div>`;
         try {
           const q = query(
-            collection(db, "leaderboard"),
+            collection(db, LEADERBOARD_COLLECTION),
             orderBy("score", "desc"),
             limit(50)
           );
@@ -257,13 +393,14 @@
           snap.forEach((d) => all.push({ id: d.id, ...d.data() }));
 
           const rpsOnly = all.filter((item) => {
-            const g = String(item.gameName || "");
-            return g.toLowerCase().includes("rock") || g.toLowerCase().includes("rps");
+            const id = String(item.gameId || "").toLowerCase();
+            const name = String(item.gameName || "").toLowerCase();
+            return id === RPS_GAME_ID || name.includes("rock") || name.includes("rps");
           });
 
           const top = rpsOnly.slice(0, 5);
           if (top.length === 0) {
-            intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">No scores yet.</div>`;
+            intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">${escapeHTML(rpsT("noScores"))}</div>`;
             return;
           }
 
@@ -286,7 +423,7 @@
         } catch (e) {
           console.error("RPS leaderboard load failed:", e);
           intoEl.innerHTML =
-            `<div style="color:var(--text-muted,#555555);">Failed to load leaderboard.</div>`;
+            `<div style="color:var(--text-muted,#555555);">${escapeHTML(rpsT("lbFailed"))}</div>`;
         }
       }
 
@@ -315,18 +452,18 @@
             <div style="display:flex; align-items:center; gap:10px; min-width:0;">
               <div id="rps-profile-avatar" style="width:34px; height:34px; border-radius:999px; overflow:hidden; flex:0 0 auto;"></div>
               <div style="min-width:0;">
-                <div id="rps-profile-name" style="font-weight:800; color:var(--title-teal,#1a5c4a); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Profile</div>
+                <div id="rps-profile-name" style="font-weight:800; color:var(--title-teal,#1a5c4a); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(rpsT("profile"))}</div>
                 <div id="rps-profile-sub" style="font-size:12px; color:var(--text-muted,#555555); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
               </div>
             </div>
             <button id="rps-profile-close" style="border:none; background:transparent; cursor:pointer; font-size:18px; padding:6px 10px; border-radius:10px;">✕</button>
           </div>
           <div id="rps-save-status" style="font-size:12px; color:var(--text-muted,#555555); margin:-4px 0 10px;">
-            Score not saved yet.
+            ${escapeHTML(rpsT("scoreNotSaved"))}
           </div>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:8px 0 6px;">
-            <div style="font-weight:800;">Leaderboard (RPS)</div>
-            <a href="../../leaderboard.html" style="font-size:12px; color:#2c3e5a; text-decoration:none;">View all</a>
+            <div style="font-weight:800;">${escapeHTML(rpsT("leaderboardTitle"))}</div>
+            <a href="../../leaderboard.html" style="font-size:12px; color:#2c3e5a; text-decoration:none;">${escapeHTML(rpsT("viewAll"))}</a>
           </div>
           <div id="${PROFILE_LB_ID}" style="display:flex; flex-direction:column;"></div>
         `;
@@ -398,13 +535,13 @@
           const subEl = section.querySelector("#rps-profile-sub");
           const avEl = section.querySelector("#rps-profile-avatar");
           if (!currentUser) {
-            if (nameEl) nameEl.textContent = "Not logged in";
-            if (subEl) subEl.textContent = "Log in from Home to track stats.";
+            if (nameEl) nameEl.textContent = rpsT("notLoggedIn");
+            if (subEl) subEl.textContent = rpsT("loginHint");
             renderAvatarInto(avEl, "", "P");
             return;
           }
-          if (nameEl) nameEl.textContent = currentUser.displayName || "Player";
-          if (subEl) subEl.textContent = currentUser.email || "Logged in";
+          if (nameEl) nameEl.textContent = currentUser.displayName || rpsT("player");
+          if (subEl) subEl.textContent = currentUser.email || rpsT("loggedIn");
           renderAvatarInto(avEl, currentUser.photoURL || "", currentUser.displayName || "Player");
         };
 
@@ -423,6 +560,37 @@
       (function waitForProfileBtn() {
         if (!wireProfileButton()) requestAnimationFrame(waitForProfileBtn);
       })();
+
+      function injectLangToggle() {
+        const header = document.querySelector(".page-header");
+        if (!header || document.getElementById("rpsLangBtn")) return false;
+
+        const btn = document.createElement("button");
+        btn.id = "rpsLangBtn";
+        btn.type = "button";
+        btn.className = "rps-lang-btn";
+        btn.textContent = rpsT("langButton");
+        btn.setAttribute("aria-label", "Toggle language");
+        btn.addEventListener("click", () => {
+          const next = getRpsLang() === "en" ? "sa" : "en";
+          try {
+            localStorage.setItem(RPS_LANG_KEY, next);
+          } catch {
+            // ignore storage errors
+          }
+          window.location.reload();
+        });
+        header.prepend(btn);
+        document.documentElement.lang = getRpsLang() === "sa" ? "sa" : "en";
+        return true;
+      }
+
+      (function waitForLangToggle() {
+        if (!injectLangToggle()) requestAnimationFrame(waitForLangToggle);
+      })();
+
+      const backLink = document.querySelector("[data-rps-back]");
+      if (backLink) backLink.setAttribute("aria-label", rpsT("backAria"));
 
       // Upload score once per session when the player resets or leaves (like Memory Match).
       setupSessionScoreUpload();
