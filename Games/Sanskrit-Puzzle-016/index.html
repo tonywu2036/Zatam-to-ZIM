@@ -920,40 +920,64 @@ if(!user){
 if(scoreUploaded) return;
 scoreUploaded = true;
 
-    const scoreData = {
+const gameId = "sanskritPuzzle";
+const today = new Date().toISOString().split("T")[0];
+const docId = `${user.uid}_${gameId}_${today}`;
 
-        userId: user.uid,
-        playerName: user.displayName || "Player",
-        email: user.email || "",
-        photoURL: user.photoURL || "",
+const scoreRef = doc(db, "leaderboard-zatamgame", docId);
 
-        gameId: "sanskritPuzzle",
-        gameName: "Sanskrit Puzzle",
+const scoreData = {
 
-        score: score,
+    userId: user.uid,
+    playerName: user.displayName || "Player",
+    email: user.email || "",
+    photoURL: user.photoURL || "",
 
-        createdAt: serverTimestamp(),
-        scoreDate: new Date().toISOString().split("T")[0]
+    gameId: gameId,
+    gameName: "Sanskrit Puzzle",
 
-    };
+    score: score,
 
-    try{
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    scoreDate: today
 
-      await addDoc(
-    collection(db, "leaderboard-zatamgame"),
-    scoreData
-);
+};
 
-        console.log("Score uploaded!", scoreData);
+try{
 
-    }catch(error){
-      scoreUploaded = false;
+    const scoreSnap = await getDoc(scoreRef);
 
-        console.error(error);
+    if(!scoreSnap.exists()){
 
-        alert("Score upload failed.");
+        await setDoc(scoreRef, scoreData);
+
+    }else{
+
+        const oldScore = scoreSnap.data().score;
+
+        if(score > oldScore){
+
+            await updateDoc(scoreRef,{
+                score: score,
+                updatedAt: serverTimestamp()
+            });
+
+        }
 
     }
+
+    console.log("Score uploaded!", scoreData);
+
+}catch(error){
+
+    scoreUploaded = false;
+
+    console.error(error);
+
+    alert("Score upload failed.");
+
+}
 
 }
 
@@ -1056,3 +1080,5 @@ window.addEventListener('keydown', e=>{
 </script>
 </body>
 </html>
+
+
