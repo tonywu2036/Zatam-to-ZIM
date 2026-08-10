@@ -146,7 +146,7 @@ let puzzleImg = null;
 let moves=0, elapsed=0, timerTick=null;
 let muted=false, curLang='en';
 
-let tileCons = [];
+
 let tileMap = {};
 
 let boardContainer = null;
@@ -547,21 +547,26 @@ for(let i=0;i<9;i++){
     c.tile = tile;
 
 c.addChild(tile);
+const hit = new createjs.Shape();
+hit.graphics.beginFill("#000").drawRect(0, 0, TP, TP);
+c.hitArea = hit;
     
 c.mouseChildren = false;
 
 c.cursor = "pointer";
-c.mouseChildren = false;
 
-c.on("click", function () {
+
+c.on("mousedown", function () {
     doMove(c._idx);
 });
 
 
 
-tileCons.push(c);
 
-tileMap[id] = c;
+tileMap[id] = {
+    container: c,
+    bitmap: tile
+};
 
 boardContainer.addChild(c);
 
@@ -584,7 +589,10 @@ for(let i=0;i<9;i++){
 
     if(id===0) continue;
 
-    const c = tileMap[id];
+    const tileObj = tileMap[id];
+
+const c = tileObj.container;
+const tile = tileObj.bitmap;
 
     c.x = gxy(i).x;
     c.y = gxy(i).y;
@@ -592,32 +600,38 @@ for(let i=0;i<9;i++){
 
     const piece = id - 1;
 
-    c.tile.image = puzzleImg;
+    tile.image = puzzleImg;
 
-    c.tile.sourceRect = new createjs.Rectangle(
+    tile.sourceRect = new createjs.Rectangle(
         (piece % 3) * sw,
         Math.floor(piece / 3) * sh,
         sw,
         sh
     );
 
-    c.tile.scaleX = TP / sw;
-    c.tile.scaleY = TP / sh;
+    tile.scaleX = TP / sw;
+    tile.scaleY = TP / sh;
 }
 
 }
 
 
-
+let isAnimating = false;
 
 function doMove(clickedIdx){
+
+    if (isAnimating) return;
 
 if(brd[clickedIdx]===0) return;
 if(nb(blank).indexOf(clickedIdx)===-1) return;
 
 const tileId = brd[clickedIdx];
 
-const tc = tileMap[tileId];
+const tileObj = tileMap[tileId];
+
+if(!tileObj) return;
+
+const tc = tileObj.container;
 
 if(!tc) return;
 
@@ -635,26 +649,28 @@ movesLbl.text = td(moves);
 startTimer();
 playClick();
 
-
+isAnimating = true;
 
 createjs.Tween.get(tc)
-    .to({
-        x:gxy(oldBlank).x,
-        y:gxy(oldBlank).y,
-        scaleX:0.96,
-        scaleY:0.96
-    },70)
+.to({
+    x: gxy(oldBlank).x,
+    y: gxy(oldBlank).y,
+    scaleX: 0.97,
+    scaleY: 0.97
+}, 90, createjs.Ease.quadOut)
 
-    .to({
-        scaleX:1,
-        scaleY:1
-    },60)
+.to({
+    scaleX: 1,
+    scaleY: 1
+}, 70, createjs.Ease.quadOut)
     .call(function(){
 
 tc.x = gxy(oldBlank).x;
 tc.y = gxy(oldBlank).y;
 tc._idx = oldBlank;
+tileMap[tileId].container = tc;
 
+isAnimating = false;
 
 
 if(isSolved()){
