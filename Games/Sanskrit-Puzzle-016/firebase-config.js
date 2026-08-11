@@ -2,7 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/fireba
 
 import {
   getAuth,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 import {
@@ -13,7 +14,7 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -38,5 +39,6 @@ export {
   doc,
   getDoc,
   setDoc,
-  updateDoc
+  updateDoc,
+  onAuthStateChanged
 };

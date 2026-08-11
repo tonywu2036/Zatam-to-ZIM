@@ -19,6 +19,7 @@ import "https://zimjs.org/cdn/019/zim_pizzazz";
 import {
     auth,
     db,
+    onAuthStateChanged,
     collection,
     addDoc,
     serverTimestamp,
@@ -110,23 +111,56 @@ const TC = [
 const SOLVED = [1,2,3,4,5,6,7,8,0];
 let brd = [], blank = 8;
 
+const SOLVED_4 = [
+  1,2,3,4,
+  5,6,7,8,
+  9,10,11,12,
+  13,14,15,0
+];
+
+let puzzleSize = 3;
+
 const nb = i => {
-  const r=Math.floor(i/3), c=i%3, a=[];
-  if(r>0)a.push(i-3); if(r<2)a.push(i+3);
-  if(c>0)a.push(i-1); if(c<2)a.push(i+1);
+  const size = puzzleSize;
+  const r = Math.floor(i / size);
+  const c = i % size;
+  const a = [];
+
+  if(r > 0) a.push(i - size);
+  if(r < size - 1) a.push(i + size);
+  if(c > 0) a.push(i - 1);
+  if(c < size - 1) a.push(i + 1);
+
   return a;
 };
-const isSolved = () => brd.every((v,i) => v===SOLVED[i]);
+const isSolved = () => {
+  const solved = puzzleSize === 4 ? SOLVED_4 : SOLVED;
+  return brd.every((v, i) => v === solved[i]);
+};
 
 function doShuffle(){
-  brd=SOLVED.slice(); blank=8; let last=-1;
-  for(let k=0;k<220;k++){
-    let n=nb(blank).filter(x=>x!==last);
-    if(!n.length) n=nb(blank);
-    const nx=n[Math.floor(Math.random()*n.length)];
-    [brd[blank],brd[nx]]=[brd[nx],brd[blank]];
-    last=blank; blank=nx;
+
+  const solved = puzzleSize === 4 ? SOLVED_4 : SOLVED;
+
+  brd = solved.slice();
+  blank = brd.length - 1;
+
+  let last = -1;
+
+  for(let k = 0; k < (puzzleSize === 4 ? 300 : 220); k++){
+
+    let n = nb(blank).filter(x => x !== last);
+
+    if(!n.length) n = nb(blank);
+
+    const nx = n[Math.floor(Math.random() * n.length)];
+
+    [brd[blank], brd[nx]] = [brd[nx], brd[blank]];
+
+    last = blank;
+    blank = nx;
   }
+
   if(isSolved()) doShuffle();
 }
 
@@ -138,7 +172,20 @@ const TP = 122;
 const GAP = 0;
 const GX = (FW-CELL*3)/2;
 const GY = 255;
-const gxy = i => ({ x: GX+(i%3)*CELL+GAP,  y: GY+Math.floor(i/3)*CELL+GAP });
+
+function getCellSize(){
+    return puzzleSize === 4 ? 90 : CELL;
+}
+
+function getGridX(){
+    const size = getCellSize() * puzzleSize;
+    return (FW - size) / 2;
+}
+
+const gxy = i => ({
+    x: getGridX() + (i % puzzleSize) * getCellSize() + GAP,
+    y: GY + Math.floor(i / puzzleSize) * getCellSize() + GAP
+});
 
 
 
@@ -258,47 +305,98 @@ backBtn.on("click", () => {
     window.location.href = "../../index.html";
 });
 
-let user = auth.currentUser;
+/* ── PROFILE ── */
+
+const profileX = FW - 85;
+const profileY = 50;
 
 const profileBg = new Circle(48, white)
-    .loc(FW - 85, 50);
+    .loc(profileX, profileY);
 
 profileBg.borderColor = "#DDDDDD";
 profileBg.borderWidth = 2;
 
-if (user && user.photoURL) {
+S.addChild(profileBg);
 
-    const profilePic = new Pic(user.photoURL)
-        .siz(42,42)
-        .center(profileBg);
 
-} else {
+// Profile content
+let profileItem = null;
 
-    new Label({
-        text:"👤",
-        size:24,
-        color:"#2B2250"
-    }).center(profileBg);
+function updateProfile(user) {
 
+    // Remove only the previous icon/photo
+    if (profileItem) {
+        profileItem.removeFrom();
+        profileItem = null;
+    }
+
+    // Get initial
+    let initial = "U";
+
+    if (user && user.displayName) {
+        initial = user.displayName.charAt(0).toUpperCase();
+    }
+
+    // Show initial first
+    profileItem = new Label({
+        text: initial,
+        size: 28,
+        font: "Arial",
+        bold: true,
+        color: "#2B2250"
+    });
+
+    profileItem.centerReg();
+    profileItem.loc(profileX, profileY);
+    profileItem.mouseEnabled = false;
+
+    S.addChild(profileItem);
+
+    // If Firebase has a photo, replace initial with photo
+    if (user && user.photoURL) {
+
+        const photo = new Pic(user.photoURL);
+
+        photo.on("ready", () => {
+
+            if (profileItem) {
+                profileItem.removeFrom();
+            }
+
+            profileItem = photo
+                .siz(42, 42)
+                .centerReg()
+                .loc(profileX, profileY);
+
+            profileItem.mouseEnabled = false;
+
+            S.addChild(profileItem);
+
+            S.update();
+        });
+    }
+
+    S.update();
 }
 
 
-// profileBg.cursor = "pointer";
+// Firebase user
+onAuthStateChanged(auth, (user) => {
+    updateProfile(user);
+});
 
-// profileBg.on("click", () => {
 
-//     if(auth.currentUser){
+profileBg.cursor = "pointer";
 
-//         window.location.href = "../../profile.html";
+profileBg.on("click", () => {
 
-//     }else{
+    if (auth.currentUser) {
+        window.location.href = "../../profile.html";
+    } else {
+        window.location.href = "../../login.html";
+    }
 
-//         window.location.href = "../../login.html";
-
-//     }
-
-// });
-profileBg.cursor = "default";
+});
 
   foot = new Label({text:'Learn Sanskrit Through Play', size:13, font:'Baloo 2', color:'#9a93b8'});
   foot.x = (FW - foot.getBounds().width)/2|0; foot.y = FH-26; S.addChild(foot);
@@ -338,7 +436,17 @@ const btn3 = new Button({
 }).loc(startX, y);
 
 btn3.on("click", () => {
-    // Already using 3x3
+
+    puzzleSize = 3;
+
+    boardBuilt = false;
+    boardSlots = [];
+    tileMap = {};
+   
+
+    boardContainer.removeAllChildren();
+
+    newGame();
 });
 
 chipBtns.push(btn3);
@@ -359,9 +467,18 @@ const btn4 = new Button({
         color: "#1B998B"
     })
 }).loc(startX + 105, y);
-
 btn4.on("click", () => {
-    alert("4×4 Coming Soon!");
+
+    puzzleSize = 4;
+
+    boardBuilt = false;
+    boardSlots = [];
+    tileMap = {};
+   
+
+    boardContainer.removeAllChildren();
+
+    newGame();
 });
 
 chipBtns.push(btn4);
@@ -482,137 +599,166 @@ function buildBoardDecor(){
 }
 
 let boardSlots = [];
+let blankHighlight = null;
+let puzzleBackground = null;
 
 function drawBoard(){
 
-  if(boardBuilt){
-
-updateBoard();
-
-return;
-
-}
+    boardContainer.removeAllChildren();
 
 
-if(boardSlots.length === 0){
+    puzzleBackground = new createjs.Bitmap(puzzleImg);
 
-for(let i=0;i<9;i++){
+const bgSize = getCellSize() * puzzleSize;
 
-    const {x,y}=gxy(i);
+puzzleBackground.scaleX = bgSize / puzzleImg.width;
+puzzleBackground.scaleY = bgSize / puzzleImg.height;
 
-    const slot = new createjs.Shape();
+puzzleBackground.x = getGridX();
+puzzleBackground.y = GY;
+puzzleBackground.alpha = 0.06;
 
-    slot.graphics
-        .beginStroke("#e8e8e8")
-        .setStrokeStyle(1)
-        .drawRect(x,y,TP,TP);
+boardContainer.addChild(puzzleBackground);
+
+
+    boardSlots = [];
+    tileMap = {};
+    boardBuilt = false;
+
+    const size = getCellSize();
+    const total = puzzleSize * puzzleSize;
+
+    // Board slots
+    for(let i = 0; i < total; i++){
+
+        const {x,y} = gxy(i);
+
+        const slot = new createjs.Shape();
+
+        slot.graphics
+            .beginStroke("#e8e8e8")
+            .setStrokeStyle(1)
+            .drawRect(x, y, size, size);
 
         boardContainer.addChild(slot);
-    boardSlots.push(slot);
-}
+        boardSlots.push(slot);
+    }
+    blankHighlight = new createjs.Shape();
 
-}
+blankHighlight.graphics
+    .beginFill("#FFF4C2")
+    .beginStroke("#FFA630")
+    .setStrokeStyle(3)
+    .drawRoundRect(3, 3, size - 6, size - 6, 10);
 
-for(let i=0;i<9;i++){
+const blankPos = gxy(blank);
 
-    const id = brd[i];
+blankHighlight.x = blankPos.x;
+blankHighlight.y = blankPos.y;
 
-    if(id===0) continue;
+boardContainer.addChild(blankHighlight);
 
-    const {x,y}=gxy(i);
+    // Tiles
+    for(let i = 0; i < total; i++){
 
-    const c = new createjs.Container();
+        const id = brd[i];
 
-    c.x = x;
-    c.y = y;
-    c._idx = i;
+        if(id === 0) continue;
 
-    const piece = id-1;
+        const {x,y} = gxy(i);
 
-    const tile = new createjs.Bitmap(puzzleImg);
+        const c = new createjs.Container();
 
-    const sw = puzzleImg.width/3;
-    const sh = puzzleImg.height/3;
+        c.x = x;
+        c.y = y;
+        c._idx = i;
 
-    tile.sourceRect = new createjs.Rectangle(
-        (piece%3)*sw,
-        Math.floor(piece/3)*sh,
-        sw,
-        sh
-    );
+        const piece = id - 1;
 
-    tile.scaleX = TP/sw;
-    tile.scaleY = TP/sh;
+        const tile = new createjs.Bitmap(puzzleImg);
 
-    c.tile = tile;
+        const sw = puzzleImg.width / puzzleSize;
+        const sh = puzzleImg.height / puzzleSize;
 
-c.addChild(tile);
-const hit = new createjs.Shape();
-hit.graphics.beginFill("#000").drawRect(0, 0, TP, TP);
-c.hitArea = hit;
-    
-c.mouseChildren = false;
+        tile.sourceRect = new createjs.Rectangle(
+            (piece % puzzleSize) * sw,
+            Math.floor(piece / puzzleSize) * sh,
+            sw,
+            sh
+        );
 
-c.cursor = "pointer";
+        tile.scaleX = size / sw;
+        tile.scaleY = size / sh;
 
+        c.tile = tile;
+        c.addChild(tile);
 
-c.on("mousedown", function () {
-    doMove(c._idx);
-});
+        const hit = new createjs.Shape();
+        hit.graphics.beginFill("#000").drawRect(0, 0, size, size);
 
+        c.hitArea = hit;
+        c.mouseChildren = false;
+        c.cursor = "pointer";
 
+        c.on("mousedown", function(){
+            doMove(c._idx);
+        });
 
+        tileMap[id] = {
+            container: c,
+            bitmap: tile
+        };
 
-tileMap[id] = {
-    container: c,
-    bitmap: tile
-};
+        boardContainer.addChild(c);
+    }
 
-boardContainer.addChild(c);
-
-}
-boardBuilt = true;
-
-
-
+    boardBuilt = true;
 }
 
 
 function updateBoard(){
 
-const sw = puzzleImg.width / 3;
-const sh = puzzleImg.height / 3;
+    const size = getCellSize();
 
-for(let i=0;i<9;i++){
+    const sw = puzzleImg.width / puzzleSize;
+    const sh = puzzleImg.height / puzzleSize;
+    if(blankHighlight){
 
-    const id = brd[i];
+    const blankPos = gxy(blank);
 
-    if(id===0) continue;
-
-    const tileObj = tileMap[id];
-
-const c = tileObj.container;
-const tile = tileObj.bitmap;
-
-    c.x = gxy(i).x;
-    c.y = gxy(i).y;
-    c._idx = i;
-
-    const piece = id - 1;
-
-    tile.image = puzzleImg;
-
-    tile.sourceRect = new createjs.Rectangle(
-        (piece % 3) * sw,
-        Math.floor(piece / 3) * sh,
-        sw,
-        sh
-    );
-
-    tile.scaleX = TP / sw;
-    tile.scaleY = TP / sh;
+    blankHighlight.x = blankPos.x;
+    blankHighlight.y = blankPos.y;
 }
 
+    for(let i = 0; i < brd.length; i++){
+
+        const id = brd[i];
+
+        if(id === 0) continue;
+
+        const tileObj = tileMap[id];
+
+        if(!tileObj) continue;
+
+        const c = tileObj.container;
+        const tile = tileObj.bitmap;
+
+        c.x = gxy(i).x;
+        c.y = gxy(i).y;
+        c._idx = i;
+
+        const piece = id - 1;
+
+        tile.sourceRect = new createjs.Rectangle(
+            (piece % puzzleSize) * sw,
+            Math.floor(piece / puzzleSize) * sh,
+            sw,
+            sh
+        );
+
+        tile.scaleX = size / sw;
+        tile.scaleY = size / sh;
+    }
 }
 
 
@@ -640,6 +786,12 @@ const oldBlank = blank;
 brd[blank] = brd[clickedIdx];
 brd[clickedIdx] = 0;
 blank = clickedIdx;
+
+if (blankHighlight) {
+    const blankPos = gxy(blank);
+    blankHighlight.x = blankPos.x;
+    blankHighlight.y = blankPos.y;
+}
 
 
 
