@@ -26,7 +26,7 @@
         const now = new Date();
         const today = entry.scoreDate || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
         const gameId = entry.gameId || "laddersSnakes";
-        const scoreId = `${user.uid}*${gameId}*${today}`;
+        const scoreId = `${user.uid}_${gameId}_${today}`;
         const scoreRef = doc(db, "leaderboard-zatamgame", scoreId);
         const scoreData = {
           userId: user.uid,

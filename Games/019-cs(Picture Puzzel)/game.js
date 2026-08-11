@@ -417,7 +417,7 @@ async function uploadScore(finalScore) {
   try {
     const today = todayString();
     const gameId = "picturePuzzle";
-    const scoreRef = doc(db, "leaderboard-zatamgame", `${currentUser.uid}*${gameId}*${today}`);
+    const scoreRef = doc(db, "leaderboard-zatamgame", `${currentUser.uid}_${gameId}_${today}`);
     const existing = await getDoc(scoreRef);
     const scoreData = {
       userId: currentUser.uid,

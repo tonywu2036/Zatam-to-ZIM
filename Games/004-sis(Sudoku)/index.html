@@ -530,7 +530,7 @@
         try {
           const today = todayString();
           const gameId = "sudoku";
-          const scoreRef = doc(db, "leaderboard-zatamgame", `${currentUser.uid}*${gameId}*${today}`);
+          const scoreRef = doc(db, "leaderboard-zatamgame", `${currentUser.uid}_${gameId}_${today}`);
           const existingScore = await getDoc(scoreRef);
           const scoreData = {
             userId: currentUser.uid,
